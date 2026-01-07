@@ -3,236 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi PAI - Semua Terbuka</title>
+    <title>Sistem Absensi PAI - Modern & Music Persistent</title>
     <style>
         :root {
-            --primary: #059669;
-            --secondary: #4f46e5;
-            --quiz-color: #db2777;
-            --music-color: #8b5cf6;
-            --home-color: #0ea5e9;
-            --bg-body: #f0fdf4;
+            /* Palette Warna Modern */
+            --primary: #10b981; /* Emerald Green */
+            --primary-dark: #047857;
+            --secondary: #6366f1; /* Indigo */
+            --secondary-dark: #4338ca;
+            --quiz-color: #db2777; /* Pink */
+            --quiz-dark: #be185d;
+            --music-color: #8b5cf6; /* Violet */
+            --music-dark: #7c3aed;
+            --home-color: #0ea5e9; /* Sky Blue */
+            --bg-body: #f3f4f6; /* Light Gray Background */
             --bg-card: #ffffff;
-            --text-main: #1e293b;
+            --text-main: #1f2937;
             --text-muted: #64748b;
-            --border: #cbd5e1;
+            --border: #e2e8f0;
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-active: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             
             /* Warna Status Absensi */
             --col-h: #dcfce7; --txt-h: #166534;
             --col-i: #fef9c3; --txt-i: #854d0e;
             --col-s: #dbeafe; --txt-s: #1e40af;
             --col-a: #fee2e2; --txt-a: #991b1b;
-            --col-closed: #f1f5f9; /* Warna abu untuk kolom ketutup (SEKARANG TIDAK DIPAKAI) */
-            --col-empty: #ffffff;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, sans-serif; }
+
         body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
         /* SIDEBAR */
         aside { 
-            width: 260px; background: #ffffff; border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; padding: 1.5rem; z-index: 10; box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+            width: 280px; background: #ffffff; border-right: 1px solid var(--border); 
+            display: flex; flex-direction: column; padding: 2rem; z-index: 20; box-shadow: var(--shadow-soft);
+            transition: transform 0.3s ease;
         }
         
-        .school-profile { text-align: center; margin-bottom: 2rem; border-bottom: 2px dashed var(--border); padding-bottom: 1.5rem; }
-        .logo-container { width: 100px; height: 100px; margin: 0 auto 15px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid #e2e8f0; overflow: hidden; }
+        .school-profile { text-align: center; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 2px dashed var(--border); }
+        .logo-container { width: 110px; height: 110px; margin: 0 auto 20px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.08); border: 4px solid #e2e8f0; overflow: hidden; }
         .school-logo { width: 100%; height: 100%; object-fit: contain; }
         
-        .school-name { font-size: 1.2rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; line-height: 1.2; }
-        .mapel-badge { display: inline-block; background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-top: 8px; }
-        .teacher-info { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; font-weight: 600; }
+        .school-name { font-size: 1.3rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2; }
+        .mapel-badge { display: inline-block; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 6px 16px; border-radius: 25px; font-size: 0.9rem; font-weight: 700; margin-top: 12px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+        .teacher-info { font-size: 0.95rem; color: var(--text-muted); margin-top: 5px; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; display: inline-block; }
 
-        .menu-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-        .class-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex: 1; padding-right: 5px; }
-        .class-btn { width: 100%; padding: 0.8rem; text-align: left; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; font-weight: 600; color: var(--text-main); transition: 0.2s; font-size: 0.95rem; }
-        .class-btn:hover { background: #f1f5f9; }
-        .class-btn.active { background: #ecfdf5; color: var(--primary); border-color: #6ee7b7; font-weight: 800; }
+        .menu-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; }
+        .class-list { list-style: none; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; padding-right: 5px; }
+        .class-btn { width: 100%; padding: 1rem; text-align: left; border: 2px solid transparent; border-radius: 10px; background: #f8fafc; cursor: pointer; font-weight: 600; color: var(--text-main); transition: all 0.2s; font-size: 1rem; display: flex; align-items: center; justify-content: space-between; }
+        .class-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .class-btn.active { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); color: var(--primary); border: none; font-weight: 800; box-shadow: var(--shadow-active); }
 
         /* MAIN CONTENT */
-        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; background: #fafafa; }
         
-        header { background: #ffffff; padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .header-title h2 { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
-        .header-actions { display: flex; gap: 10px; }
+        header { background: #ffffff; padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .header-title h2 { font-size: 1.4rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        .header-actions { display: flex; gap: 12px; }
         
-        .btn-action { border: none; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s; width: 100%; justify-content: center; }
-        .btn-music { background-color: var(--music-color); color: white; }
-        .btn-music:hover { background-color: #7c3aed; transform: translateY(-2px); }
-        .btn-lock { background-color: #475569; color: white; }
-        .btn-lock.locked { background-color: #ef4444; }
-        .btn-print { background-color: #3b82f6; color: white; }
-        .btn-download { background-color: #10b981; color: white; }
+        .btn-action { border: none; padding: 0.7rem 1.2rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; width: 100%; justify-content: center; font-family: inherit; }
+        
+        .btn-music { background: linear-gradient(135deg, var(--music-color), var(--music-dark)); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-music.music-active-playing { box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); animation: pulse-glow 2s infinite; }
+        .btn-music:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        
+        .btn-lock { background: var(--secondary); color: white; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-lock:hover { background: var(--secondary-dark); transform: translateY(-2px); }
+        .btn-lock.locked { background: #ef4444; }
+        
+        .btn-print { background: var(--home-color); color: white; }
+        .btn-print:hover { background: #0284c7; transform: translateY(-2px); }
+        
+        .btn-download { background: var(--primary); color: white; }
+        .btn-download:hover { background: var(--primary-dark); transform: translateY(-2px); }
         
         /* TOMBOL FOOTER SIDEBAR */
-        .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
-        .btn-home { background-color: var(--home-color); color: white; padding: 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-home:hover { background-color: #0284c7; transform: translateY(-1px); }
-        .btn-reset { background: #fee2e2; color: #ef4444; padding: 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn-reset:hover { background: #fecaca; }
+        .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+        .btn-home { background: white; color: var(--home-color); border: 2px solid var(--home-color); padding: 1rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-home:hover { background: #f0f9ff; }
+        .btn-reset { background: white; color: #ef4444; border: 2px solid #ef4444; padding: 1rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-reset:hover { background: #fef2f2; }
 
         /* Animasi Musik */
-        .music-playing { animation: pulse-glow 1.5s infinite; }
         @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6); }
+            50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0); }
             100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
         }
 
-        .content-scroll { padding: 2rem; overflow-y: auto; flex: 1; }
+        .content-scroll { padding: 2.5rem; overflow-y: auto; flex: 1; }
         
         /* Navigasi Tab */
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; background: white; padding: 8px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .nav-btn { padding: 0.8rem; border-radius: 8px; background: transparent; cursor: pointer; font-weight: 600; color: var(--text-muted); flex: 1; text-align: center; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 2rem; background: white; padding: 10px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-soft); overflow-x: auto; }
+        .nav-btn { padding: 0.8rem 1.2rem; border-radius: 10px; background: transparent; cursor: pointer; font-weight: 600; color: var(--text-muted); flex: 1; text-align: center; transition: all 0.2s; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; border: 1px solid transparent; }
         .nav-btn:hover { background: #f8fafc; color: var(--text-main); }
-        .nav-btn.active-absen { background: #10b981; color: white; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
-        .nav-btn.active-nilai { background: var(--secondary); color: white; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2); }
-        .nav-btn.active-kuis { background: var(--quiz-color); color: white; box-shadow: 0 2px 4px rgba(219, 39, 119, 0.2); }
-        .nav-btn.active-hasil { background: #f59e0b; color: white; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); }
+        .nav-btn.active-absen { background: var(--primary); color: white; box-shadow: var(--shadow-active); }
+        .nav-btn.active-nilai { background: var(--secondary); color: white; box-shadow: var(--shadow-active); }
+        .nav-btn.active-kuis { background: var(--quiz-color); color: white; box-shadow: var(--shadow-active); }
+        .nav-btn.active-hasil { background: #f59e0b; color: white; box-shadow: var(--shadow-active); }
 
         /* GAME AREA */
         .game-container {
-            background: white; padding: 2rem; border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(219, 39, 119, 0.15);
-            border: 2px solid #fce7f3; margin-bottom: 2rem;
+            background: white; padding: 2.5rem; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(219, 39, 119, 0.2);
+            border: 1px solid #fbcfe8; margin-bottom: 2rem;
             text-align: center;
-            max-width: 800px; margin-left: auto; margin-right: auto;
+            max-width: 850px; margin-left: auto; margin-right: auto;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .game-title { font-size: 1.8rem; font-weight: 900; color: var(--quiz-color); margin-bottom: 1rem; }
-        .game-desc { color: var(--text-muted); margin-bottom: 2rem; }
+        @keyframes slideUp { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
+        
+        .game-title { font-size: 2rem; font-weight: 900; color: var(--quiz-color); margin-bottom: 1.5rem; letter-spacing: 0.5px; }
+        .game-desc { color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.5; }
 
-        .form-group-game { margin-bottom: 1.5rem; text-align: left; }
-        .form-label-game { font-weight: 700; display: block; margin-bottom: 0.5rem; color: var(--text-main); }
-        .game-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1.1rem; outline: none; }
-        .game-input:focus { border-color: var(--quiz-color); box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1); }
+        .form-group-game { margin-bottom: 2rem; text-align: left; }
+        .form-label-game { font-weight: 700; display: block; margin-bottom: 0.8rem; color: var(--text-main); font-size: 1rem; }
+        .game-input { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.1rem; outline: none; background: #f8fafc; transition: 0.2s; }
+        .game-input:focus { border-color: var(--quiz-color); box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.15); background: white; }
 
-        .btn-start-game { background: var(--quiz-color); color: white; width: 100%; padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .btn-start-game:hover { transform: scale(1.02); opacity: 0.9; }
+        .btn-start-game { background: linear-gradient(135deg, var(--quiz-color), var(--quiz-dark)); color: white; width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(219, 39, 119, 0.3); letter-spacing: 0.5px; }
+        .btn-start-game:hover { transform: translateY(-3px); filter: brightness(1.05); }
 
-        .question-card { margin-bottom: 1.5rem; text-align: left; padding: 1.5rem; background: #fdf2f8; border-radius: 10px; border: 1px solid #fbcfe8; }
-        .q-text { font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; color: #831843; }
-        .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .q-option { padding: 12px; background: white; border: 1px solid #fbcfe8; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .q-option:hover { background: #fce7f3; border-color: var(--quiz-color); }
+        .question-card { margin-bottom: 2rem; text-align: left; padding: 2rem; background: #fdf2f8; border-radius: 15px; border: 1px solid #fbcfe8; }
+        .q-text { font-size: 1.3rem; font-weight: 800; margin-bottom: 1.2rem; color: #831843; line-height: 1.4; }
+        .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .q-option { padding: 15px; background: white; border: 2px solid #fbcfe8; border-radius: 10px; cursor: pointer; transition: 0.2s; font-weight: 600; display: flex; align-items: center; gap: 12px; font-size: 1rem; }
+        .q-option:hover { background: #fce7f3; border-color: var(--quiz-color); transform: translateY(-2px); }
         .q-option input:checked + span { color: var(--quiz-color); font-weight: 800; }
         
-        .result-box { background: #dcfce7; color: #166534; padding: 2rem; border-radius: 12px; border: 2px solid #86efac; margin-bottom: 1rem; }
-        .result-score { font-size: 4rem; font-weight: 900; display: block; margin: 10px 0; }
+        .result-box { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #166534; padding: 2.5rem; border-radius: 20px; border: 2px solid #86efac; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .result-score { font-size: 4.5rem; font-weight: 900; display: block; margin: 10px 0; text-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         
         .hidden { display: none; }
 
         /* Input Area Siswa Biasa */
-        .add-box { display: flex; gap: 10px; margin-bottom: 1.5rem; background: white; padding: 15px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .add-input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; }
-        .add-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-        .add-btn { background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; }
+        .add-box { display: flex; gap: 12px; margin-bottom: 2rem; background: white; padding: 20px; border-radius: 15px; border: 1px solid var(--border); box-shadow: var(--shadow-soft); }
+        .add-input { flex: 1; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.1rem; outline: none; background: #f8fafc; transition: 0.2s; }
+        .add-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); background: white; }
+        .add-btn { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 0 2rem; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); letter-spacing: 0.5px; transition: 0.2s; }
+        .add-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
-        /* Table Style (Excel Look) */
-        .grid-container { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: auto; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        /* Table Style (Modern Excel Look) */
+        .grid-container { background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); overflow: auto; position: relative; box-shadow: var(--shadow-soft); margin-top: 1rem; }
         table { border-collapse: collapse; min-width: 100%; width: 100%; table-layout: fixed; } 
         
-        th { background: #f1f5f9; padding: 10px 5px; font-size: 0.85rem; text-align: center; border: 1px solid var(--border); position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #94a3b8; }
-        td { padding: 0; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; height: 50px; background: white; }
-        tbody tr:hover { background-color: #f8fafc; }
+        th { background: #f8fafc; padding: 14px 8px; font-size: 0.9rem; text-align: center; border: 1px solid var(--border); position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; letter-spacing: 0.5px; }
+        td { padding: 0; border: 1px solid var(--border); text-align: center; font-size: 0.95rem; height: 55px; background: white; transition: 0.1s; }
+        tbody tr:hover { background-color: #fdf4ff; }
 
         /* Sticky Columns (No & Nama) */
         th.sticky-col, td.sticky-col {
-            position: sticky; left: 0; background: var(--bg-card); z-index: 10; min-width: 50px; text-align: center; border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
-        }
+            position: sticky; left: 0; background: var(--bg-card); z-index: 10; min-width: 60px; text-align: center; border-right: 2px solid #94a3b8; display: flex; align-items: center; justify-content: center; box-shadow: 2px 0 5px rgba(0,0,0,0.03); }
+        th.sticky-col, td.sticky-col { font-weight: 800; color: var(--text-main); }
         
         th.sticky-col-second, td.sticky-col-second {
-            position: sticky; left: 50px; background: var(--bg-card); z-index: 10; min-width: 200px; text-align: left; padding: 0 15px; border-right: 2px solid #94a3b8; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; left: 60px; background: var(--bg-card); z-index: 10; min-width: 220px; text-align: left; padding: 0 20px; border-right: 2px solid #94a3b8; display: flex; align-items: center; justify-content: space-between;
         }
-        
-        th.sticky-col { font-weight: 800; color: var(--primary); background: #f1f5f9; z-index: 15; border-right: 1px solid #94a3b8; }
-        th.sticky-col-second { z-index: 15; background: #f1f5f9; font-weight: 800; color: var(--primary); border-right: 2px solid #94a3b8; }
+        th.sticky-col-second { z-index: 15; background: #f8fafc; font-weight: 800; color: var(--primary); border-right: 2px solid #94a3b8; }
         
         /* Excel-like Clickable Cell */
         .day-cell { 
-            cursor: pointer; font-weight: 800; transition: all 0.1s; user-select: none; font-size: 1.2rem; 
+            cursor: pointer; font-weight: 700; transition: all 0.1s; user-select: none; font-size: 1.3rem; 
             width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; /* Lebih bulat agar modern */
         }
-        .day-cell:hover { filter: brightness(0.95); transform: scale(1.05); }
+        .day-cell:hover { transform: scale(1.1); filter: brightness(0.95); }
         
-        /* Style untuk Kolom Ketutup (P1-P7) - TIDAK DIPAKAI LAGI */
-        .day-cell-closed {
-            background-color: var(--col-closed); 
-            cursor: pointer; /* Dibuat bisa diklik untuk reset kekosong */
-            color: #94a3b8;
-        }
-
         /* Urutan Warna Baru */
-        .status-H { background-color: var(--col-h); color: var(--txt-h); }
-        .status-I { background-color: var(--col-i); color: var(--txt-i); } /* Ijin */
-        .status-S { background-color: var(--col-s); color: var(--txt-s); } /* Sakit */
-        .status-A { background-color: var(--col-a); color: var(--txt-a); } /* Alfa */
-        .status- { background-color: var(--col-empty); color: #cbd5e1; } /* Kosong */
+        .status-H { background-color: var(--col-h); color: var(--txt-h); box-shadow: 0 1px 3px rgba(22, 163, 74, 0.1); }
+        .status-I { background-color: var(--col-i); color: var(--txt-i); box-shadow: 0 1px 3px rgba(245, 158, 11, 0.1); }
+        .status-S { background-color: var(--col-s); color: var(--txt-s); box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1); }
+        .status-A { background-color: var(--col-a); color: var(--txt-a); box-shadow: 0 1px 3px rgba(153, 27, 27, 0.1); }
+        .status- { background-color: #f8fafc; color: #cbd5e1; }
 
-        .grade-input { width: 100%; height: 100%; border: none; text-align: center; font-weight: 700; color: var(--text-main); background: transparent; outline: none; font-size: 1.1rem; }
+        .grade-input { width: 100%; height: 100%; border: none; text-align: center; font-weight: 700; color: var(--text-main); background: transparent; outline: none; font-size: 1.3rem; }
         .grade-input:focus { background: #e0e7ff; }
-        .grade-input:disabled { background: #f1f5f9; color: #cbd5e1; cursor: not-allowed; }
+        .grade-input:disabled { background: #f8fafc; color: #cbd5e1; cursor: not-allowed; }
         
-        .quiz-avg { font-weight: 800; color: var(--quiz-color); font-size: 1.1rem; }
+        .quiz-avg { font-weight: 900; color: var(--quiz-color); font-size: 1.4rem; }
 
-        .info-box { background: #fffbeb; color: #92400e; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid #fcd34d; display: flex; align-items: center; gap: 10px; }
+        .info-box { background: #fff7ed; color: #b45309; padding: 16px 20px; border-radius: 12px; font-size: 0.95rem; margin-bottom: 2rem; border: 1px solid #fcd34d; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 2px rgba(251, 191, 36, 0.1); }
         
-        .btn-del { color: #cbd5e2; cursor: pointer; font-weight: bold; font-size: 1.2rem; line-height: 1; padding: 0 8px; }
-        .btn-del:hover { color: #ef4444; }
+        .btn-del { color: #cbd5e2; cursor: pointer; font-weight: 800; font-size: 1.4rem; line-height: 1; padding: 0 10px; opacity: 0.5; transition: 0.2s; }
+        .btn-del:hover { color: #ef4444; transform: rotate(90deg); }
 
-        .score-badge { display: inline-block; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 1.1rem; min-width: 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .score-high { background: #dcfce7; color: #166534; border: 1px solid #86efac; } 
+        .score-badge { display: inline-block; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 1.2rem; min-width: 60px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); letter-spacing: 1px; }
+        .score-high { background: #dcfce7; color: #166534; border: 1px solid #86efac; box-shadow: 0 2px 5px rgba(22, 163, 74, 0.1); } 
         .score-med { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; } 
-        .score-low { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .score-low { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; box-shadow: 0 2px 5px rgba(153, 27, 27, 0.1); }
 
         /* Mobile */
-        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); }
+        .menu-toggle { display: none; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-main); }
         @media (max-width: 768px) {
-            aside { position: absolute; height: 100%; transform: translateX(-100%); transition: transform 0.3s; width: 270px; }
+            aside { position: absolute; height: 100%; transform: translateX(-100%); transition: transform 0.3s ease; width: 280px; }
             aside.open { transform: translateX(0); }
             .menu-toggle { display: block; }
-            .nav-tabs { overflow-x: auto; padding: 5px; }
-            .nav-btn { flex: 0 0 auto; min-width: 120px; }
+            .nav-tabs { overflow-x: auto; padding: 10px; }
+            .nav-btn { flex: 0 0 auto; min-width: 140px; padding: 0.6rem 1rem; }
             .header-actions span { display: none; }
-            th.sticky-col-second, td.sticky-col-second { min-width: 160px; }
+            th.sticky-col-second, td.sticky-col-second { min-width: 180px; }
             .q-options { grid-template-columns: 1fr; }
-            .date-display { flex-direction: column; gap: 5px; text-align: left; }
         }
 
+        /* PRINT STYLES */
         @media print {
-            aside, .add-box, .nav-tabs, .info-box, .header-actions, .menu-toggle, .game-container, .date-display { display: none !important; }
+            aside, .add-box, .nav-tabs, .info-box, .header-actions, .menu-toggle, .game-container, .sidebar-footer { display: none !important; }
             main, .content-scroll, body { height: auto !important; overflow: visible !important; display: block !important; background: white !important; padding: 0 !important; margin: 0 !important; }
-            .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
-            .grid-container { box-shadow: none; border: 1px solid #000; }
-            table { font-size: 10pt; }
-            th, td { border: 1px solid #000 !important; color: #000 !important; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #000; }
+            .grid-container { box-shadow: none; border: 2px solid #000; margin-top: 20px; }
+            table { font-size: 10pt; width: 100%; }
+            th, td { border: 1px solid #000 !important; color: #000 !important; padding: 8px; }
             .school-profile { border: none; margin-bottom: 10px; }
+            th.sticky-col, td.sticky-col { border-right: 2px solid #000; }
+            th.sticky-col-second, td.sticky-col-second { border-right: 2px solid #000; }
+            .status-H { background: none !important; color: #000 !important; }
+            .status-I { background: none !important; color: #000 !important; }
+            .status-S { background: none !important; color: #000 !important; }
+            .status-A { background: none !important; color: #000 !important; }
+            .day-cell { height: 30px; font-size: 12pt; }
+            .score-badge { border: 1px solid #000; background: none; color: #000; }
         }
         .print-header { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- AUDIO -->
+    <!-- AUDIO (Mode Tetap) -->
     <audio id="bgMusic" loop>
         <source src="djtormonitor.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Header Print -->
     <div class="print-header">
-        <div style="display:flex; justify-content:center; margin-bottom:15px;">
-            <img src="./logo-sdn-banjarwangi.png" alt="Logo" style="width:80px; height:80px; object-fit:contain;">
+        <div style="display:flex; justify-content:center; margin-bottom:20px;">
+            <img src="./logo-sdn-banjarwangi.png" alt="Logo" style="width:100px; height:100px; object-fit:contain;">
         </div>
-        <h1 style="font-size:24px; text-transform:uppercase; margin:0; color:#000;">SDN BANJARWANGI</h1>
-        <h3 style="margin:5px 0; color:#000;">Pendidikan Agama Islam</h3>
-        <p style="margin:5px 0 20px 0; font-weight:bold; color:#000;">Laporan Hasil Belajar Siswa</p>
-        <div style="border-top: 3px double #000; margin: 20px 0;"></div>
+        <h1 style="font-size:28px; text-transform:uppercase; margin:0; color:#000; letter-spacing: 2px;">SDN BANJARWANGI</h1>
+        <h3 style="margin:5px 0; color:#000; font-size: 18px;">Pendidikan Agama Islam</h3>
+        <p style="margin:5px 0 30px 0; font-weight:bold; color:#000;">Laporan Hasil Belajar Siswa</p>
+        <div style="border-top: 3px double #000; margin: 30px 0;"></div>
     </div>
 
     <!-- SIDEBAR -->
     <aside id="sidebar">
         <div class="school-profile">
             <div class="logo-container">
-                <img src="./logo-sdn-banjarwangi.png" onerror="this.src='https://via.placeholder.com/100?text=LOGO';" class="school-logo">
+                <img src="./logo-sdn-banjarwangi.png" onerror="this.src='https://via.placeholder.com/110?text=LOGO';" class="school-logo">
             </div>
             <h2 class="school-name">SDN Banjarwangi</h2>
             <div class="mapel-badge">Pendidikan Agama Islam</div>
@@ -290,6 +308,12 @@
                 <button class="nav-btn" id="btnHasil" onclick="switchView('hasil')">🚀 Hasil Akhir</button>
             </div>
 
+            <!-- INFO LOGIKA (Hanya di Hasil) -->
+            <div id="logicInfo" class="info-box" style="display:none;">
+                <span>🧮 Logika Perhitungan:</span> 
+                (Rata-rata Nilai Harian + Rata-rata Kuis) dibagi 2. 
+            </div>
+
             <!-- GAME KUIS -->
             <div id="gameArea" class="hidden">
                 <div id="gameIntro" class="game-container">
@@ -327,25 +351,19 @@
                 </div>
 
                 <div id="gameQuestions" class="game-container hidden">
-                    <h2 class="game-title" style="font-size:1.5rem;">Jawab Pertanyaan Berikut:</h2>
+                    <h2 class="game-title" style="font-size:1.6rem;">Jawab Pertanyaan Berikut:</h2>
                     <div id="questionsRender"></div>
-                    <button class="btn-start-game" onclick="submitGame()" style="background:var(--primary); margin-top:20px;">SELESAI & SIMPAN NILAI 💾</button>
+                    <button class="btn-start-game" onclick="submitGame()" style="background:var(--primary); margin-top:20px; border-radius: 12px;">SELESAI & SIMPAN NILAI 💾</button>
                 </div>
 
                 <div id="gameResult" class="game-container hidden">
                     <div class="result-box">
                         <h3>Nilai Kamu:</h3>
                         <span id="finalScoreDisplay" class="result-score">0</span>
-                        <p id="resultMessage">Nilai telah tersimpan otomatis ke rekap!</p>
+                        <p id="resultMessage" style="font-size: 1.1rem; font-weight: 600;">Nilai telah tersimpan otomatis ke rekap!</p>
                     </div>
-                    <button class="btn-start-game" onclick="resetGame()">MAIN UNTUK SISWA LAIN ↺</button>
+                    <button class="btn-start-game" onclick="resetGame()" style="background: white; color: var(--text-main); border: 2px solid var(--border);">MAIN UNTUK SISWA LAIN ↺</button>
                 </div>
-            </div>
-
-            <!-- INFO LOGIKA -->
-            <div id="logicInfo" class="info-box" style="display:none;">
-                <span>ℹ️ Logika Perhitungan:</span> 
-                (Rata-rata Nilai Harian + Rata-rata Kuis) dibagi 2. 
             </div>
 
             <!-- TAMBAH SISWA -->
@@ -408,11 +426,13 @@
             quizzes: {} 
         };
 
+        // Kunci untuk menyimpan state musik secara terpisah
+        const MUSIC_KEY = 'app_sekolah_music_state_v2';
+
         window.onload = function() {
-            const saved = localStorage.getItem('app_sekolah_vfinal_semua_terbuka');
+            const saved = localStorage.getItem('app_sekolah_vfinal_modern_persistent');
             if (saved) { 
                 appData = JSON.parse(saved);
-                // Pastikan struktur data aman
                 classes.forEach(c => {
                     if(!appData.students[c]) appData.students[c] = [];
                     if(!appData.attendance[c]) appData.attendance[c] = {};
@@ -425,6 +445,21 @@
             }
             
             document.getElementById('lblTeacher').innerText = TEACHER_NAME;
+            
+            // --- LOGIKA MODE LAGU TETAP (PERSISTENT) ---
+            const savedMusicState = localStorage.getItem(MUSIC_KEY);
+            if (savedMusicState === 'true') {
+                isPlaying = true;
+                updateMusicButtonUI(true);
+                // Coba play otomatis (browser mungkin menolak tanpa interaksi pertama)
+                const audio = document.getElementById("bgMusic");
+                audio.play().catch(e => console.log("Autoplay blocked:", e));
+            } else {
+                isPlaying = false;
+                updateMusicButtonUI(false);
+            }
+
+            // Error Handler Audio
             const audio = document.getElementById("bgMusic");
             audio.onerror = function() {
                 alert("PERINGATAN: File lagu 'djtormonitor.mp3' tidak ditemukan!");
@@ -432,6 +467,7 @@
                 btn.disabled = true;
                 btn.style.opacity = "0.5";
             };
+            
             renderAll();
         };
 
@@ -446,12 +482,14 @@
         }
 
         function saveData() { 
-            localStorage.setItem('app_sekolah_vfinal_semua_terbuka', JSON.stringify(appData)); 
+            localStorage.setItem('app_sekolah_vfinal_modern_persistent', JSON.stringify(appData));
+            // Simpan state musik bersamaan
+            localStorage.setItem(MUSIC_KEY, isPlaying ? 'true' : 'false');
         }
 
         function resetAll() {
             if(confirm("HAPUS SEMUA DATA? Data tidak bisa dikembalikan.")) { 
-                localStorage.removeItem('app_sekolah_vfinal_semua_terbuka'); 
+                localStorage.removeItem('app_sekolah_vfinal_modern_persistent'); 
                 location.reload(); 
             }
         }
@@ -465,6 +503,36 @@
                 saveData();
                 renderAll();
                 document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+
+        // --- LOGIKA MUSIK ---
+        function toggleMusic() {
+            const audio = document.getElementById("bgMusic");
+            const btn = document.getElementById('btnMusic');
+            const label = document.getElementById('musicLabel');
+            
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                updateMusicButtonUI(false);
+            } else {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    updateMusicButtonUI(true);
+                }).catch(error => { console.error("Audio Play Error:", error); alert("Gagal memutar musik. Pastikan Anda mengklik halaman terlebih dahulu."); });
+            }
+        }
+
+        function updateMusicButtonUI(playing) {
+            const btn = document.getElementById('btnMusic');
+            const label = document.getElementById('musicLabel');
+            if (playing) {
+                btn.classList.add('music-active-playing');
+                label.innerText = "ON"; // Label lebih simpel untuk status
+            } else {
+                btn.classList.remove('music-active-playing');
+                label.innerText = "OFF";
             }
         }
 
@@ -529,7 +597,6 @@
             const clsName = classes[appData.currentClassIdx];
             let titleText = "";
             
-            // Tampilkan Tahun dan Bulan Aktif di Judul
             if(appData.viewMode === 'absen') titleText = `Absensi (16 Pertemuan) - ${mthName} ${yearNum}`;
             else if(appData.viewMode === 'nilai') titleText = `Nilai Harian (16 Pertemuan) - ${mthName} ${yearNum}`;
             else if(appData.viewMode === 'quiz') titleText = "Mode Kuis & Game PAI";
@@ -649,17 +716,21 @@
             const audio = document.getElementById("bgMusic");
             const btn = document.getElementById('btnMusic');
             const label = document.getElementById('musicLabel');
-            if (isPlaying) {
-                audio.pause();
-                btn.classList.remove('music-playing');
-                label.innerText = "Musik";
-                isPlaying = false;
+            
+            // Fungsi ini dipindahkan ke toggleMusic() di atas untuk handle UI state
+            // Panggil toggleMusic saja, jangan duplikasi logika
+            // Karena user minta tombol musik tetap, mungkin tombolnya sendiri cukup
+            // Tapi jika ingin tombol khusus 'Pause/Play', gunakan logika di atas.
+            // Disini saya panggil fungsi standar:
+            const savedMusicState = localStorage.getItem(MUSIC_KEY);
+            if (savedMusicState === 'true') {
+                isPlaying = true;
+                updateMusicButtonUI(true);
+                const audio = document.getElementById("bgMusic");
+                audio.play().catch(e => console.log("Autoplay blocked:", e));
             } else {
-                audio.play().then(() => {
-                    btn.classList.add('music-playing');
-                    label.innerText = "Berhenti";
-                    isPlaying = true;
-                }).catch(error => { console.error(error); });
+                isPlaying = false;
+                updateMusicButtonUI(false);
             }
         }
 
@@ -707,7 +778,7 @@
             constad.innerHTML = '';
             const mode = appData.viewMode;
 
-            // Header Khusus dengan No, Nama, P1-P16
+            // Header Khusus dengan No, Nama, P1-P16 (SEMUA DIBUKA)
             if (mode === 'absen') {
                 constad.innerHTML += `<th class="sticky-col">No</th>`;
                 constad.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
@@ -762,9 +833,7 @@
                 rowHtml += `<td class="sticky-col-second"><span>${s.name}</span><span class="btn-del" onclick="deleteStudent('${s.id}')">&times;</span></td>`;
 
                 if (mode === 'absen') {
-                    // MENGGANTI LOGIKA: SEMUA P1-P16 DIAKTIF (BISA DIKLIK)
-                    // Tidak ada lagi pengecekan isClosed (i <= 7).
-                    // Semua kolom akan dianggap normal dan klik jalan.
+                    // MENGGANTI LOGIKA: SEMUA P1-P16 DIBUKA (TANPA PENGECEKAN)
                     for(let i=1; i<=totalDays; i++) {
                         const key = `${monthIdx}-${i}`;
                         const val = appData.attendance[currentClass][s.id]?.[key] || '';
@@ -805,7 +874,7 @@
                         if(val && val !== '') { sum += parseInt(val); count++; }
                     }
                     const avg = count > 0 ? Math.round(sum/count) : 0;
-                    rowHtml += `<td style="font-weight:bold; color:var(--secondary);">${avg}</td>`;
+                    rowHtml += `<td style="font-weight:bold; color:var(--secondary); font-size: 1.1rem;">${avg}</td>`;
                 } else if (mode === 'hasil') {
                     let sum = 0, count = 0;
                     for(let i=1; i<=totalDays; i++) {
@@ -846,12 +915,9 @@
             });
         }
 
-        // --- FUNGSI SIKLIK (TANPA GATEKEEPER) ---
+        // --- FUNGSI SIKLIK (MENGGANTI LOGIKA: SUDAH HAPUS GATEKEEPER) ---
         function cycleStatus(sid, key) {
             if(isLocked) return;
-            
-            // MENGHAPUS LOGIKA PENGGUNAAN (HANYA UNTUK PERTAHANAN 1-7)
-            // SEKARANG TIDAK ADA VALIDASI DI SINI.
             
             const currentClass = classes[appData.currentClassIdx];
             
@@ -860,7 +926,7 @@
 
             const current = appData.attendance[currentClass][sid][key] || '';
             
-            // Urutan: H, Ijin, Sakit, Alfa, Loop
+            // Urutan: H, Ijin, Sakit, Alfa
             const statuses = ['', 'H', 'I', 'S', 'A']; 
             const idx = statuses.indexOf(current);
             const next = statuses[(idx + 1) % statuses.length];
@@ -873,7 +939,6 @@
 
         function setGrade(sid, key, val) {
             if(isLocked) return;
-            // Nilai selalu bisa diisi tanpa penutupan
             const currentClass = classes[appData.currentClassIdx];
             if(!appData.grades[currentClass]) appData.grades[currentClass] = {};
             if(!appData.grades[currentClass][sid]) appData.grades[currentClass][sid] = {};
