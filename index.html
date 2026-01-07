@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi PAI - Format Excel</title>
+    <title>Sistem Absensi PAI - Semua Terbuka</title>
     <style>
         :root {
             --primary: #059669;
@@ -22,7 +22,8 @@
             --col-i: #fef9c3; --txt-i: #854d0e;
             --col-s: #dbeafe; --txt-s: #1e40af;
             --col-a: #fee2e2; --txt-a: #991b1b;
-            --col-closed: #f1f5f9; /* Abu abu untuk kolom ketutup */
+            --col-closed: #f1f5f9; /* Warna abu untuk kolom ketutup (SEKARANG TIDAK DIPAKAI) */
+            --col-empty: #ffffff;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
@@ -100,7 +101,7 @@
         .game-title { font-size: 1.8rem; font-weight: 900; color: var(--quiz-color); margin-bottom: 1rem; }
         .game-desc { color: var(--text-muted); margin-bottom: 2rem; }
 
-        .form-group-game { margin-bottom:1.5rem; text-align: left; }
+        .form-group-game { margin-bottom: 1.5rem; text-align: left; }
         .form-label-game { font-weight: 700; display: block; margin-bottom: 0.5rem; color: var(--text-main); }
         .game-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1.1rem; outline: none; }
         .game-input:focus { border-color: var(--quiz-color); box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1); }
@@ -153,10 +154,10 @@
         }
         .day-cell:hover { filter: brightness(0.95); transform: scale(1.05); }
         
-        /* Style untuk Kolom Ketutup (P1-P7) */
+        /* Style untuk Kolom Ketutup (P1-P7) - TIDAK DIPAKAI LAGI */
         .day-cell-closed {
             background-color: var(--col-closed); 
-            cursor: not-allowed; 
+            cursor: pointer; /* Dibuat bisa diklik untuk reset kekosong */
             color: #94a3b8;
         }
 
@@ -194,10 +195,11 @@
             .header-actions span { display: none; }
             th.sticky-col-second, td.sticky-col-second { min-width: 160px; }
             .q-options { grid-template-columns: 1fr; }
+            .date-display { flex-direction: column; gap: 5px; text-align: left; }
         }
 
         @media print {
-            aside, .add-box, .nav-tabs, .info-box, .header-actions, .menu-toggle, .game-container { display: none !important; }
+            aside, .add-box, .nav-tabs, .info-box, .header-actions, .menu-toggle, .game-container, .date-display { display: none !important; }
             main, .content-scroll, body { height: auto !important; overflow: visible !important; display: block !important; background: white !important; padding: 0 !important; margin: 0 !important; }
             .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
             .grid-container { box-shadow: none; border: 1px solid #000; }
@@ -344,7 +346,6 @@
             <div id="logicInfo" class="info-box" style="display:none;">
                 <span>ℹ️ Logika Perhitungan:</span> 
                 (Rata-rata Nilai Harian + Rata-rata Kuis) dibagi 2. 
-                <br>Perhatian: Pertemuan 1-7 Terkunci (Ketutup). P8-P16 Dibuka.
             </div>
 
             <!-- TAMBAH SISWA -->
@@ -398,7 +399,8 @@
         
         let appData = { 
             currentClassIdx: 0, 
-            currentMonthIdx: 0,
+            currentMonthIdx: new Date().getMonth(), // Auto Load Current Month
+            currentYear: new Date().getFullYear(), // Simpan Tahun Juga
             viewMode: 'absen', 
             students: {}, 
             attendance: {},
@@ -407,9 +409,10 @@
         };
 
         window.onload = function() {
-            const saved = localStorage.getItem('app_sekolah_vfinal_excelmode');
+            const saved = localStorage.getItem('app_sekolah_vfinal_semua_terbuka');
             if (saved) { 
                 appData = JSON.parse(saved);
+                // Pastikan struktur data aman
                 classes.forEach(c => {
                     if(!appData.students[c]) appData.students[c] = [];
                     if(!appData.attendance[c]) appData.attendance[c] = {};
@@ -443,12 +446,12 @@
         }
 
         function saveData() { 
-            localStorage.setItem('app_sekolah_vfinal_excelmode', JSON.stringify(appData)); 
+            localStorage.setItem('app_sekolah_vfinal_semua_terbuka', JSON.stringify(appData)); 
         }
 
         function resetAll() {
             if(confirm("HAPUS SEMUA DATA? Data tidak bisa dikembalikan.")) { 
-                localStorage.removeItem('app_sekolah_vfinal_excelmode'); 
+                localStorage.removeItem('app_sekolah_vfinal_semua_terbuka'); 
                 location.reload(); 
             }
         }
@@ -456,7 +459,8 @@
         function goToHome() {
             if(confirm("Kembali ke tampilan awal (Kelas 4A / Tab Absensi)?")) {
                 appData.currentClassIdx = 0;
-                appData.currentMonthIdx = 0;
+                appData.currentMonthIdx = new Date().getMonth(); // Reset ke bulan sekarang juga
+                appData.currentYear = new Date().getFullYear();
                 appData.viewMode = 'absen';
                 saveData();
                 renderAll();
@@ -521,16 +525,19 @@
 
         function updateTitle() {
             const mthName = months[appData.currentMonthIdx];
+            const yearNum = appData.currentYear;
             const clsName = classes[appData.currentClassIdx];
             let titleText = "";
-            if(appData.viewMode === 'absen') titleText = "Absensi (16 Pertemuan)";
-            else if(appData.viewMode === 'nilai') titleText = "Nilai Harian (16 Pertemuan)";
-            else if(appData.viewMode === 'quiz') titleText = "Mode Kuis & Game PAI";
-            else if(appData.viewMode === 'recap_absen') titleText = "Rekap Absensi";
-            else if(appData.viewMode === 'recap_nilai') titleText = "Rekap Nilai";
-            else if(appData.viewMode === 'hasil') titleText = "Hasil Akhir Siswa";
             
-            document.getElementById('pageTitle').innerText = `${titleText} - ${clsName}`;
+            // Tampilkan Tahun dan Bulan Aktif di Judul
+            if(appData.viewMode === 'absen') titleText = `Absensi (16 Pertemuan) - ${mthName} ${yearNum}`;
+            else if(appData.viewMode === 'nilai') titleText = `Nilai Harian (16 Pertemuan) - ${mthName} ${yearNum}`;
+            else if(appData.viewMode === 'quiz') titleText = "Mode Kuis & Game PAI";
+            else if(appData.viewMode === 'recap_absen') titleText = "Rekap Absensi - " + mthName;
+            else if(appData.viewMode === 'recap_nilai') titleText = "Rekap Nilai - " + mthName;
+            else if(appData.viewMode === 'hasil') titleText = "Hasil Akhir Siswa - " + mthName;
+            
+            document.getElementById('pageTitle').innerText = titleText;
         }
 
         function updateInfoBox() {
@@ -697,40 +704,43 @@
 
         function renderTableHeader() {
             const thead = document.getElementById('tableHeader');
-            thead.innerHTML = '';
+            constad.innerHTML = '';
             const mode = appData.viewMode;
 
-            // Header Khusus dengan No dan Nama
+            // Header Khusus dengan No, Nama, P1-P16
             if (mode === 'absen') {
-                thead.innerHTML += `<th class="sticky-col">No</th>`;
-                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                constad.innerHTML += `<th class="sticky-col">No</th>`;
+                constad.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
                 for(let i=1; i<=totalDays; i++) {
-                    // Tanda jika kolom ketutup
-                    const isClosed = (i <= 7);
-                    const style = isClosed ? "background:#e2e8f0; color:#64748b;" : "";
-                    thead.innerHTML += `<th style="${style}">P${i}</th>`;
+                    constad.innerHTML += `<th>P${i}</th>`;
                 }
             } else if (mode === 'nilai') {
-                thead.innerHTML += `<th class="sticky-col">No</th>`;
-                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
-                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>P${i}</th>`;
+                constad.innerHTML += `<th class="sticky-col">No</th>`;
+                constad.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                for(let i=1; i<=totalDays; i++) {
+                    constad.innerHTML += `<th>P${i}</th>`;
+                }
             } else if (mode === 'quiz') {
-                thead.innerHTML += `<th class="sticky-col">No</th>`;
-                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
-                for(let i=1; i<=totalQuizzes; i++) thead.innerHTML += `<th>Kuis ${i}</th>`;
-                thead.innerHTML += `<th>Rata-rata</th>`;
+                constad.innerHTML += `<th class="sticky-col">No</th>`;
+                constad.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                for(let i=1; i<=totalQuizzes; i++) {
+                    constad.innerHTML += `<th>Kuis ${i}</th>`;
+                }
+                constad.innerHTML += `<th>Rata-rata</th>`;
             } else if (mode === 'recap_absen') {
-                thead.innerHTML += `<th class="sticky-col">No</th>`;
-                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
-                ['H', 'I', 'S', 'A'].forEach(s => thead.innerHTML += `<th>${s}</th>`);
+                constad.innerHTML += `<th class="sticky-col">No</th>`;
+                constad.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                ['H', 'I', 'S', 'A'].forEach(s => {
+                    constad.innerHTML += `<th>${s}</th>`;
+                });
             } else if (mode === 'recap_nilai') {
-                thead.innerHTML += `<th class="sticky-col">No</th>`;
-                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
-                thead.innerHTML += `<th>Rata-rata</th>`;
+                constad.innerHTML += `<th class="sticky-col">No</th>`;
+                constad.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                constad.innerHTML += `<th>Rata-rata</th>`;
             } else if (mode === 'hasil') {
-                thead.innerHTML += `<th class="sticky-col">No</th>`;
-                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
-                thead.innerHTML += `<th>Nilai Akhir</th>`;
+                constad.innerHTML += `<th class="sticky-col">No</th>`;
+                constad.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                constad.innerHTML += `<th>Nilai Akhir</th>`;
             }
         }
 
@@ -752,32 +762,22 @@
                 rowHtml += `<td class="sticky-col-second"><span>${s.name}</span><span class="btn-del" onclick="deleteStudent('${s.id}')">&times;</span></td>`;
 
                 if (mode === 'absen') {
+                    // MENGGANTI LOGIKA: SEMUA P1-P16 DIAKTIF (BISA DIKLIK)
+                    // Tidak ada lagi pengecekan isClosed (i <= 7).
+                    // Semua kolom akan dianggap normal dan klik jalan.
                     for(let i=1; i<=totalDays; i++) {
                         const key = `${monthIdx}-${i}`;
                         const val = appData.attendance[currentClass][s.id]?.[key] || '';
                         
-                        // Cek apakah kolom ketutup (1-7)
-                        const isClosed = (i <= 7);
-                        
-                        if (isClosed) {
-                            // Tampilan Kolom Ketutup
-                            rowHtml += `<td><div class="day-cell day-cell-closed">-</div></td>`;
-                        } else {
-                            // Tampilan Normal
-                            rowHtml += `<td><div class="day-cell status-${val}" onclick="cycleStatus('${s.id}', '${key}')">${val}</div></td>`;
-                        }
+                        // Render selalu normal
+                        rowHtml += `<td><div class="day-cell status-${val}" onclick="cycleStatus('${s.id}', '${key}')">${val}</div></td>`;
                     }
                 } else if (mode === 'nilai') {
                     for(let i=1; i<=totalDays; i++) {
                         const key = `${monthIdx}-${i}`;
                         const val = appData.grades[currentClass][s.id]?.[key] || '';
-                        const isClosed = (i <= 7);
-                        
-                        if(isClosed) {
-                             rowHtml += `<td><div class="day-cell day-cell-closed">-</div></td>`;
-                        } else {
-                             rowHtml += `<td><input type="number" class="grade-input" value="${val}" onchange="setGrade('${s.id}', '${key}', this.value)" ${isLocked?'disabled':''} min="0" max="100"></td>`;
-                        }
+                        // Nilai selalu bisa diisi
+                        rowHtml += `<td><input type="number" class="grade-input" value="${val}" onchange="setGrade('${s.id}', '${key}', this.value)" ${isLocked?'disabled':''} min="0" max="100"></td>`;
                     }
                 } else if (mode === 'quiz') {
                     let sumQuiz = 0; let countQuiz = 0;
@@ -846,17 +846,13 @@
             });
         }
 
+        // --- FUNGSI SIKLIK (TANPA GATEKEEPER) ---
         function cycleStatus(sid, key) {
             if(isLocked) return;
             
-            // Cek apakah pertemuan ini termasuk kolom ketutup (1-7)
-            const parts = key.split('-');
-            const meetingIdx = parseInt(parts[1]);
-            if(meetingIdx <= 7) {
-                alert("Pertemuan 1-7 sudah ditutup! Tidak bisa mengubah data.");
-                return;
-            }
-
+            // MENGHAPUS LOGIKA PENGGUNAAN (HANYA UNTUK PERTAHANAN 1-7)
+            // SEKARANG TIDAK ADA VALIDASI DI SINI.
+            
             const currentClass = classes[appData.currentClassIdx];
             
             if(!appData.attendance[currentClass]) appData.attendance[currentClass] = {};
@@ -864,7 +860,7 @@
 
             const current = appData.attendance[currentClass][sid][key] || '';
             
-            // Urutan: H, Ijin, Sakit, Alfa
+            // Urutan: H, Ijin, Sakit, Alfa, Loop
             const statuses = ['', 'H', 'I', 'S', 'A']; 
             const idx = statuses.indexOf(current);
             const next = statuses[(idx + 1) % statuses.length];
@@ -877,15 +873,7 @@
 
         function setGrade(sid, key, val) {
             if(isLocked) return;
-            
-            // Cek penutupan untuk nilai harian juga
-            const parts = key.split('-');
-            const meetingIdx = parseInt(parts[1]);
-            if(meetingIdx <= 7) {
-                alert("Pertemuan 1-7 sudah ditutup! Tidak bisa mengubah data.");
-                return;
-            }
-
+            // Nilai selalu bisa diisi tanpa penutupan
             const currentClass = classes[appData.currentClassIdx];
             if(!appData.grades[currentClass]) appData.grades[currentClass] = {};
             if(!appData.grades[currentClass][sid]) appData.grades[currentClass][sid] = {};
@@ -924,7 +912,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Data_${currentClass}_${months[appData.currentMonthIdx]}.csv`);
+            link.setAttribute("download", `Data_${currentClass}_${months[appData.currentMonthIdx]}_${appData.currentYear}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
