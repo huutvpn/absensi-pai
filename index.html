@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Absensi & Nilai PAI SDN Banjarwangi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+header{background:#10b981;color:#fff;padding:14px;font-size:18px;font-weight:700}
+.container{display:flex}
+aside{width:260px;background:#fff;border-right:1px solid #ddd;padding:15px}
+main{flex:1;padding:15px}
+.logo{text-align:center}
+.logo img{width:80px;height:80px;border-radius:50%;border:3px solid #10b981}
+.badge{background:#10b981;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px}
+.menu button{width:100%;margin:4px 0;padding:8px;border:none;border-radius:6px;font-weight:600}
+.menu .active{background:#d1fae5}
+
+table{border-collapse:collapse;width:100%;background:#fff}
+th,td{border:1px solid #000;padding:4px;font-size:11px;text-align:center}
+th{background:#e5e7eb}
+.name{text-align:left;font-weight:600}
+.cell{cursor:pointer;font-weight:700;text-transform:lowercase}
+.h{background:#dcfce7}.s{background:#dbeafe}.i{background:#fef3c7}.a{background:#fee2e2}
+input.nilai{width:50px;text-align:center}
+
+.status-open{color:green;font-weight:700}
+.status-lock{color:red;font-weight:700}
+.rekap-box{margin-top:15px;background:#fff;padding:10px;border:2px solid #000}
+
+@media print{
+aside,button,input{display:none}
+header{display:none}
+body{background:#fff}
+.kop{display:block}
+table{font-size:10px}
+.ttd{margin-top:40px;display:flex;justify-content:space-between}
+}
+
+.kop{display:none;text-align:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:15px}
+.kop img{width:70px}
+.kop h2,.kop h3{margin:2px}
+</style>
+</head>
+
+<body>
+
+<header>📘 ABSENSI & NILAI PAI – SDN BANJARWANGI</header>
+
+<div class="container">
+<aside>
+<div class="logo">
+<img src="logo-sdn-banjarwangi.png">
+<h3>SDN BANJARWANGI</h3>
+<div class="badge">PAI</div>
+<p>Guru: <b>SHABUDIN</b></p>
+</div>
+
+<hr>
+<b>Kelas</b>
+<div id="kelasMenu" class="menu"></div>
+<hr>
+<b>Bulan</b>
+<div id="bulanMenu" class="menu"></div>
+<hr>
+<button onclick="lockData()">🔒 Kunci Bulan</button>
+<button onclick="unlockData()">🔓 Buka Kunci</button>
+<button onclick="window.print()">📄 Cetak A4</button>
+</aside>
+
+<main>
+
+<!-- KOP SURAT -->
+<div class="kop">
+<img src="logo-sdn-banjarwangi.png">
+<h2>SD NEGERI BANJARWANGI</h2>
+<h3>LAPORAN ABSENSI & NILAI PAI</h3>
+<p>Tahun Pelajaran 2025 / 2026</p>
+</div>
+
+<h3 id="judul"></h3>
+<div id="lockInfo"></div>
+
+<input id="namaBaru" placeholder="Nama siswa">
+<button onclick="tambahSiswa()">+ Tambah</button>
+
+<table>
+<thead id="thead"></thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<!-- REKAP TOTAL -->
+<div class="rekap-box" id="rekapTotal"></div>
+
+<div class="ttd">
+<div>Mengetahui,<br>Kepala Sekolah<br><br><br>( __________ )</div>
+<div>Guru PAI<br><br><br><b>SHABUDIN</b></div>
+</div>
+
+</main>
+</div>
+
+<script>
+const kelasList=["Kelas 3A","Kelas 3B","Kelas 4A","Kelas 4B"];
+const bulanList=["Bulan 1","Bulan 2","Bulan 3"];
+const hari=30;
+const status=["","h","s","i","a"];
+
+let data=JSON.parse(localStorage.getItem("banjarwangi"))||{
+kelas:kelasList[0],bulan:bulanList[0],
+siswa:{},absen:{},nilai:{},lock:{}};
+
+function save(){localStorage.setItem("banjarwangi",JSON.stringify(data))}
+function key(){return data.kelas+"-"+data.bulan}
+function isLocked(){return data.lock[key()]===true}
+
+function renderMenu(){
+kelasMenu.innerHTML="";bulanMenu.innerHTML="";
+kelasList.forEach(k=>{
+let b=document.createElement("button");
+b.textContent=k;b.className=(k===data.kelas?"active":"");
+b.onclick=()=>{data.kelas=k;save();render()}
+kelasMenu.appendChild(b);
+});
+bulanList.forEach(bn=>{
+let b=document.createElement("button");
+b.textContent=bn;b.className=(bn===data.bulan?"active":"");
+b.onclick=()=>{data.bulan=bn;save();render()}
+bulanMenu.appendChild(b);
+});
+}
+
+function tambahSiswa(){
+let n=namaBaru.value.trim();if(!n)return;
+let k=key();data.siswa[k]=data.siswa[k]||[];
+data.siswa[k].push(n);namaBaru.value="";
+save();render();
+}
+
+function toggleAbsen(n,i){
+if(isLocked())return;
+let k=key();
+data.absen[k]=data.absen[k]||{};
+data.absen[k][n]=data.absen[k][n]||{};
+let v=data.absen[k][n][i]||"";
+data.absen[k][n][i]=status[(status.indexOf(v)+1)%status.length];
+save();
+}
+
+function setNilai(n,val){
+let k=key();
+data.nilai[k]=data.nilai[k]||{};
+data.nilai[k][n]=val;
+save();
+}
+
+function lockData(){data.lock[key()]=true;save();render()}
+function unlockData(){delete data.lock[key()];save();render()}
+
+function render(){
+renderMenu();
+judul.textContent=data.kelas+" – "+data.bulan;
+lockInfo.innerHTML=isLocked()
+?"<span class='status-lock'>🔒 BULAN TERKUNCI</span>"
+:"<span class='status-open'>🟢 BULAN TERBUKA</span>";
+
+let k=key();let siswa=data.siswa[k]||[];
+let TH=0,TS=0,TI=0,TA=0;
+let totalNilai=0;
+
+thead.innerHTML="<tr><th>Nama</th>"+
+Array.from({length:hari},(_,i)=>"<th>"+(i+1)+"</th>").join("")+
+"<th>H</th><th>S</th><th>I</th><th>A</th><th>Nilai Akhir</th></tr>";
+
+tbody.innerHTML="";
+siswa.forEach(n=>{
+let H=0,S=0,I=0,A=0;
+let tr=document.createElement("tr");
+tr.innerHTML="<td class='name'>"+n+"</td>";
+for(let i=1;i<=hari;i++){
+let v=data.absen[k]?.[n]?.[i]||"";
+if(v==="h")H++;if(v==="s")S++;if(v==="i")I++;if(v==="a")A++;
+let td=document.createElement("td");
+td.textContent=v;td.className="cell "+v;
+td.onclick=()=>{toggleAbsen(n,i);render()}
+tr.appendChild(td);
+}
+let nilai=data.nilai[k]?.[n]||0;
+let nilaiAkhir=Math.max(0, nilai-(A*2));
+totalNilai+=nilaiAkhir;
+TH+=H;TS+=S;TI+=I;TA+=A;
+
+tr.innerHTML+=`<td>${H}</td><td>${S}</td><td>${I}</td><td>${A}</td>
+<td><input class="nilai" type="number" value="${nilai}"
+${isLocked()?"disabled":""}
+onchange="setNilai('${n}',this.value)"> = ${nilaiAkhir}</td>`;
+tbody.appendChild(tr);
+});
+
+rekapTotal.innerHTML=`
+<b>REKAP TOTAL KELAS</b><br>
+Hadir: ${TH} | Sakit: ${TS} | Izin: ${TI} | Alpha: ${TA}<br>
+Rata-rata Nilai Akhir: ${(siswa.length? (totalNilai/siswa.length).toFixed(1):0)}
+`;
+}
+
+render();
+</script>
+</body>
+</html>
