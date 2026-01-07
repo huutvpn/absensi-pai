@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Absensi PAI SDN Banjarwangi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+header{background:#10b981;color:#fff;padding:12px;font-weight:bold}
+.container{display:flex}
+aside{width:240px;background:#fff;padding:10px;border-right:1px solid #ccc}
+main{flex:1;padding:10px}
+.logo{text-align:center}
+.logo img{width:70px}
+button{padding:6px;margin:3px}
+table{border-collapse:collapse;width:100%;background:#fff}
+th,td{border:1px solid #000;padding:4px;font-size:12px;text-align:center}
+th{background:#eee}
+.name{text-align:left}
+input[type=text]{width:100%;border:none;text-align:center}
+@media print{
+aside,button,input{display:none}
+header{display:none}
+}
+</style>
+</head>
+
+<body>
+<header>ABSENSI PAI – SDN BANJARWANGI</header>
+
+<div class="container">
+<aside>
+<div class="logo">
+<img src="logo-sdn-banjarwangi.png"><br>
+<b>SDN BANJARWANGI</b><br>
+PAI<br>
+Guru: <b>SHABUDIN</b>
+</div>
+
+<hr>
+<b>Kelas</b><br>
+<button onclick="setKelas('3A')">Kelas 3A</button>
+<button onclick="setKelas('3B')">Kelas 3B</button>
+<button onclick="setKelas('4A')">Kelas 4A</button>
+
+<hr>
+<b>Bulan</b><br>
+<button onclick="setBulan('1')">Bulan 1</button>
+<button onclick="setBulan('2')">Bulan 2</button>
+<button onclick="setBulan('3')">Bulan 3</button>
+
+<hr>
+<button onclick="lockData()">🔒 Kunci</button>
+<button onclick="unlockData()">🔓 Buka</button>
+<button onclick="window.print()">🖨️ Cetak</button>
+</aside>
+
+<main>
+<h3 id="judul"></h3>
+
+<input id="namaSiswa" placeholder="Nama siswa">
+<button onclick="tambahSiswa()">+ Tambah</button>
+
+<table id="tabel">
+<thead>
+<tr>
+<th>Nama</th>
+<script>
+for(let i=1;i<=30;i++)document.write("<th>"+i+"</th>");
+</script>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</main>
+</div>
+
+<script>
+let kelas="3A",bulan="1";
+let data=JSON.parse(localStorage.getItem("absen"))||{};
+let locked=false;
+
+function key(){return kelas+"-"+bulan}
+function save(){localStorage.setItem("absen",JSON.stringify(data))}
+
+function setKelas(k){kelas=k;render()}
+function setBulan(b){bulan=b;render()}
+
+function tambahSiswa(){
+let n=document.getElementById("namaSiswa").value.trim();
+if(!n)return;
+data[key()]=data[key()]||[];
+data[key()].push({nama:n,absen:{}});
+document.getElementById("namaSiswa").value="";
+save();render();
+}
+
+function lockData(){locked=true;alert("Dikunci")}
+function unlockData(){locked=false;alert("Dibuka")}
+
+function render(){
+judul.innerText="Kelas "+kelas+" – Bulan "+bulan+(locked?" 🔒":"");
+tbody.innerHTML="";
+(data[key()]||[]).forEach((s,i)=>{
+let tr=document.createElement("tr");
+tr.innerHTML="<td class='name'>"+s.nama+"</td>";
+for(let d=1;d<=30;d++){
+let td=document.createElement("td");
+let inp=document.createElement("input");
+inp.type="text";
+inp.maxLength=1;
+inp.value=s.absen[d]||"";
+inp.oninput=()=>{ if(!locked){ s.absen[d]=inp.value.toLowerCase(); save(); } };
+td.appendChild(inp);
+tr.appendChild(td);
+}
+tbody.appendChild(tr);
+});
+}
+render();
+</script>
+</body>
+</html>
