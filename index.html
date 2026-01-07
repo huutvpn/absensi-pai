@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Absensi PAI SDN Banjarwangi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{margin:0;font-family:Segoe UI,Arial;background:#f1f5f9}
+header{background:#10b981;color:#fff;padding:14px;font-size:18px;font-weight:700}
+.container{display:flex;height:calc(100vh - 56px)}
+aside{width:260px;background:#fff;border-right:1px solid #ddd;padding:15px;overflow:auto}
+main{flex:1;padding:15px;overflow:auto}
+.logo{text-align:center}
+.logo img{width:90px;height:90px;border-radius:50%;border:4px solid #d1fae5;object-fit:contain}
+.logo h3{margin:8px 0 4px}
+.badge{background:#10b981;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px}
+.menu button{width:100%;margin:4px 0;padding:8px;border:none;border-radius:6px;font-weight:600}
+.menu .active{background:#d1fae5}
+table{border-collapse:collapse;width:100%;background:#fff}
+th,td{border:1px solid #ddd;padding:6px;font-size:12px;text-align:center}
+th{background:#f8fafc;position:sticky;top:0}
+.name{text-align:left;font-weight:600}
+.cell{cursor:pointer;font-weight:700}
+.H{background:#dcfce7}
+.S{background:#dbeafe}
+.I{background:#fef3c7}
+.A{background:#fee2e2}
+.view-only{pointer-events:none;opacity:.6}
+.footer-btn{background:#fee2e2;color:#b91c1c;padding:10px;border:none;border-radius:6px;width:100%;margin-top:10px}
+.status-open{color:#16a34a;font-weight:700}
+.status-lock{color:#dc2626;font-weight:700}
+button{cursor:pointer}
+@media print{
+aside,button,input{display:none}
+body{background:#fff}
+.ttd{display:flex;justify-content:space-between;margin-top:40px}
+}
+</style>
+</head>
+
+<body>
+<header>📘 ABSENSI & NILAI PAI – SDN BANJARWANGI</header>
+
+<div class="container">
+<aside>
+<div class="logo">
+<img src="logo-sdn-banjarwangi.png">
+<h3>SDN BANJARWANGI</h3>
+<div class="badge">PAI</div>
+<p style="font-size:12px">Guru: <b>SHABUDIN</b></p>
+</div>
+
+<hr>
+<b>Kelas</b>
+<div id="kelasMenu" class="menu"></div>
+
+<hr>
+<b>Bulan</b>
+<div id="bulanMenu" class="menu"></div>
+
+<hr>
+<button class="footer-btn" onclick="resetAll()">🗑️ RESET SEMUA DATA</button>
+</aside>
+
+<main>
+<button onclick="setMode('guru')">👨‍🏫 Mode Guru</button>
+<button onclick="setMode('kepsek')">👨‍💼 Mode Kepsek</button>
+<button onclick="lockData()">🔒 Kunci Bulan</button>
+<button onclick="unlockData()">🔓 Buka Kunci</button>
+<button onclick="window.print()">📄 Cetak PDF</button>
+
+<h3 id="judul"></h3>
+<div id="lockInfo"></div>
+
+<input id="namaBaru" placeholder="Nama siswa baru">
+<button onclick="tambahSiswa()">+ Tambah</button>
+
+<table>
+<thead id="thead"></thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<div class="ttd">
+<div>Mengetahui,<br>Kepala Sekolah<br><br><br>( ____________ )</div>
+<div>Guru PAI<br><br><br><b>SHABUDIN</b></div>
+</div>
+</main>
+</div>
+
+<script>
+const PASSWORD_KEPSEK="12345";
+const kelasList=["Kelas 3A","Kelas 3B","Kelas 4A","Kelas 4B"];
+const bulanList=["Bulan 1","Bulan 2","Bulan 3"];
+const hari=30;
+const status=["","H","S","I","A"];
+
+let data=JSON.parse(localStorage.getItem("banjarwangi"))||{
+kelas:kelasList[0],
+bulan:bulanList[0],
+mode:"guru",
+siswa:{},
+absen:{},
+lock:{}};
+
+function save(){localStorage.setItem("banjarwangi",JSON.stringify(data))}
+function key(){return data.kelas+"-"+data.bulan}
+
+// 👉 FINAL: default TERBUKA, terkunci hanya jika dikunci manual
+function isLocked(){
+  return data.lock[key()] === true;
+}
+
+function renderMenu(){
+kelasMenu.innerHTML="";bulanMenu.innerHTML="";
+kelasList.forEach(k=>{
+let b=document.createElement("button");
+b.textContent=k;b.className=(k===data.kelas?"active":"");
+b.onclick=()=>{data.kelas=k;save();render()}
+kelasMenu.appendChild(b);
+});
+bulanList.forEach(bn=>{
+let b=document.createElement("button");
+b.textContent=bn;b.className=(bn===data.bulan?"active":"");
+b.onclick=()=>{data.bulan=bn;save();render()}
+bulanMenu.appendChild(b);
+});
+}
+
+function setMode(m){
+if(m==="kepsek"){
+let p=prompt("Password Kepala Sekolah:");
+if(p!==PASSWORD_KEPSEK){alert("Password salah");return;}
+}
+data.mode=m;save();render();
+}
+
+function tambahSiswa(){
+let n=namaBaru.value.trim();if(!n)return;
+let k=key();data.siswa[k]=data.siswa[k]||[];
+data.siswa[k].push(n);namaBaru.value="";
+save();render();
+}
+
+function toggleAbsen(n,i){
+if(isLocked()) return; // terkunci = tidak bisa isi
+let k=key();
+data.absen[k]=data.absen[k]||{};
+data.absen[k][n]=data.absen[k][n]||{};
+let v=data.absen[k][n][i]||"";
+data.absen[k][n][i]=status[(status.indexOf(v)+1)%status.length];
+save();
+}
+
+function lockData(){
+data.lock[key()]=true;
+save();render();
+}
+
+function unlockData(){
+delete data.lock[key()];
+save();render();
+}
+
+function render(){
+renderMenu();
+judul.textContent=data.kelas+" – "+data.bulan;
+lockInfo.innerHTML = isLocked()
+? "<p class='status-lock'>🔒 BULAN TERKUNCI (tidak bisa diisi)</p>"
+: "<p class='status-open'>🟢 BULAN TERBUKA (silakan isi absensi)</p>";
+
+let k=key();let siswa=data.siswa[k]||[];
+thead.innerHTML="<tr><th>Nama</th>"+Array.from({length:hari},(_,i)=>"<th>"+(i+1)+"</th>").join("")+"<th>H</th><th>S</th><th>I</th><th>A</th></tr>";
+tbody.innerHTML="";
+
+siswa.forEach(n=>{
+let H=0,S=0,I=0,A=0;
+let tr=document.createElement("tr");
+tr.innerHTML="<td class='name'>"+n+"</td>";
+for(let i=1;i<=hari;i++){
+let v=data.absen[k]?.[n]?.[i]||"";
+if(v==="H")H++;if(v==="S")S++;if(v==="I")I++;if(v==="A")A++;
+let td=document.createElement("td");
+td.textContent=v;td.className="cell "+v;
+td.onclick=()=>{toggleAbsen(n,i);render()}
+tr.appendChild(td);
+}
+tr.innerHTML+=`<td>${H}</td><td>${S}</td><td>${I}</td><td>${A}</td>`;
+tbody.appendChild(tr);
+});
+
+if(data.mode==="kepsek")
+document.querySelector("table").classList.add("view-only");
+else
+document.querySelector("table").classList.remove("view-only");
+}
+
+function resetAll(){
+if(confirm("HAPUS SEMUA DATA?")){
+localStorage.removeItem("banjarwangi");location.reload();
+}
+}
+
+render();
+</script>
+</body>
+</html>
