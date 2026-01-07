@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi & Game Kuis PAI - SDN Banjarwangi</title>
+    <title>Sistem Absensi PAI - 16 Pertemuan</title>
     <style>
         :root {
             --primary: #059669;
             --secondary: #4f46e5;
             --quiz-color: #db2777;
             --music-color: #8b5cf6;
-            --home-color: #0ea5e9; /* Warna Biru untuk Tombol Home */
+            --home-color: #0ea5e9;
             --bg-body: #f0fdf4;
             --bg-card: #ffffff;
             --text-main: #1e293b;
@@ -64,21 +64,9 @@
         
         /* TOMBOL FOOTER SIDEBAR */
         .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
-        
-        .btn-home { 
-            background-color: var(--home-color); color: white; padding: 0.8rem; 
-            border-radius: 8px; border: none; cursor: pointer; font-weight: 700; 
-            font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .btn-home { background-color: var(--home-color); color: white; padding: 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-home:hover { background-color: #0284c7; transform: translateY(-1px); }
-        
-        .btn-reset { 
-            background: #fee2e2; color: #ef4444; padding: 0.8rem; 
-            border-radius: 8px; border: none; cursor: pointer; font-weight: 700; 
-            font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s;
-        }
+        .btn-reset { background: #fee2e2; color: #ef4444; padding: 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-reset:hover { background: #fecaca; }
 
         /* Animasi Musik */
@@ -116,27 +104,17 @@
         .game-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1.1rem; outline: none; }
         .game-input:focus { border-color: var(--quiz-color); box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1); }
 
-        .btn-start-game {
-            background: var(--quiz-color); color: white; width: 100%; padding: 15px;
-            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer;
-            transition: 0.2s;
-        }
+        .btn-start-game { background: var(--quiz-color); color: white; width: 100%; padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .btn-start-game:hover { transform: scale(1.02); opacity: 0.9; }
 
         .question-card { margin-bottom: 1.5rem; text-align: left; padding: 1.5rem; background: #fdf2f8; border-radius: 10px; border: 1px solid #fbcfe8; }
         .q-text { font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; color: #831843; }
         .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .q-option { 
-            padding: 12px; background: white; border: 1px solid #fbcfe8; border-radius: 8px; 
-            cursor: pointer; transition: 0.2s; font-weight: 600; display: flex; align-items: center; gap: 10px;
-        }
+        .q-option { padding: 12px; background: white; border: 1px solid #fbcfe8; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 600; display: flex; align-items: center; gap: 10px; }
         .q-option:hover { background: #fce7f3; border-color: var(--quiz-color); }
         .q-option input:checked + span { color: var(--quiz-color); font-weight: 800; }
         
-        .result-box {
-            background: #dcfce7; color: #166534; padding: 2rem; border-radius: 12px;
-            border: 2px solid #86efac; margin-bottom: 1rem;
-        }
+        .result-box { background: #dcfce7; color: #166534; padding: 2rem; border-radius: 12px; border: 2px solid #86efac; margin-bottom: 1rem; }
         .result-score { font-size: 4rem; font-weight: 900; display: block; margin: 10px 0; }
         
         .hidden { display: none; }
@@ -151,7 +129,7 @@
         .grid-container { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: auto; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         table { border-collapse: collapse; min-width: 100%; width: 100%; table-layout: fixed; } 
         
-        th { background: #f8fafc; padding: 12px 8px; font-size: 0.85rem; text-align: center; border: 1px solid var(--border); position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; }
+        th { background: #f8fafc; padding: 10px 8px; font-size: 0.8rem; text-align: center; border: 1px solid var(--border); position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; }
         td { padding: 0; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; height: 50px; border-bottom: 1px solid #f1f5f9; }
         tbody tr:nth-child(even) { background-color: #fcfcfc; } 
         tbody tr:hover { background-color: #f1f5f9; }
@@ -161,6 +139,7 @@
         }
         th.sticky-col { z-index: 15; background: #f8fafc; font-weight: 800; color: var(--primary); }
         
+        /* Absensi Cell */
         .day-cell { cursor: pointer; font-weight: 800; transition: background 0.1s; user-select: none; font-size: 1.1rem; }
         .day-cell:hover { opacity: 0.8; transform: scale(1.05); }
         .status-H { background-color: var(--col-h); color: var(--txt-h); }
@@ -242,7 +221,6 @@
         <div class="menu-label">Pilih Kelas</div>
         <ul class="class-list" id="classList"></ul>
         
-        <!-- FOOTER SIDEBAR (MENU UTAMA & RESET) -->
         <div class="sidebar-footer">
             <button class="btn-home" onclick="goToHome()">
                 🏠 Menu Utama
@@ -293,16 +271,13 @@
 
             <!-- GAME KUIS -->
             <div id="gameArea" class="hidden">
-                <!-- FORM INPUT -->
                 <div id="gameIntro" class="game-container">
                     <h2 class="game-title">🎮 Kuis Pendidikan Agama Islam</h2>
                     <p class="game-desc">Masukkan data diri untuk memulai kuis interaktif.</p>
                     
                     <div class="form-group-game">
                         <label class="form-label-game">Pilih Kelas:</label>
-                        <select id="gameClassSelect" class="game-input">
-                            <!-- Populated by JS -->
-                        </select>
+                        <select id="gameClassSelect" class="game-input"></select>
                     </div>
 
                     <div class="form-group-game">
@@ -330,14 +305,12 @@
                     <button class="btn-start-game" onclick="startGame()">MULAI KUIS 🚀</button>
                 </div>
 
-                <!-- PERTANYAAN -->
                 <div id="gameQuestions" class="game-container hidden">
                     <h2 class="game-title" style="font-size:1.5rem;">Jawab Pertanyaan Berikut:</h2>
                     <div id="questionsRender"></div>
                     <button class="btn-start-game" onclick="submitGame()" style="background:var(--primary); margin-top:20px;">SELESAI & SIMPAN NILAI 💾</button>
                 </div>
 
-                <!-- HASIL -->
                 <div id="gameResult" class="game-container hidden">
                     <div class="result-box">
                         <h3>Nilai Kamu:</h3>
@@ -346,13 +319,12 @@
                     </div>
                     <button class="btn-start-game" onclick="resetGame()">MAIN UNTUK SISWA LAIN ↺</button>
                 </div>
-
             </div>
 
             <!-- INFO LOGIKA -->
             <div id="logicInfo" class="info-box" style="display:none;">
                 <span>ℹ️ Logika Perhitungan:</span> 
-                (Rata-rata Nilai Harian + Rata-rata Kuis / 2) - (Alpha × 5) - (Sakit × 2) - (Izin × 2).
+                (Rata-rata Nilai Harian + Rata-rata Kuis) dibagi 2. Siswa yang nilai 100 & absen lengkap dapat nilai 100.
             </div>
 
             <!-- TAMBAH SISWA -->
@@ -380,7 +352,7 @@
         const TEACHER_NAME = "SHABUDIN";
         const classes = ["Kelas 4A", "Kelas 4B", "Kelas 4C", "Kelas 3A", "Kelas 3B", "Kelas 3C"];
         const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        const totalDays = 31; 
+        const totalDays = 16; // DIUBAH JADI 16 PERTEMUAN
         const totalQuizzes = 10; 
 
         const PENALTI_ALPHA = 5;
@@ -415,16 +387,22 @@
         };
 
         window.onload = function() {
-            const saved = localStorage.getItem('app_sekolah_vfinal_game');
+            const saved = localStorage.getItem('app_sekolah_vfinal_fix16');
             if (saved) { 
                 appData = JSON.parse(saved);
-                if(!appData.quizzes) { initQuizData(); saveData(); }
+                // Pastikan struktur data aman
+                classes.forEach(c => {
+                    if(!appData.students[c]) appData.students[c] = [];
+                    if(!appData.attendance[c]) appData.attendance[c] = {};
+                    if(!appData.grades[c]) appData.grades[c] = {};
+                    if(!appData.quizzes[c]) appData.quizzes[c] = {};
+                });
+                saveData();
             } else { 
                 initEmptyData(); 
             }
             
             document.getElementById('lblTeacher').innerText = TEACHER_NAME;
-            
             const audio = document.getElementById("bgMusic");
             audio.onerror = function() {
                 alert("PERINGATAN: File lagu 'djtormonitor.mp3' tidak ditemukan!");
@@ -432,7 +410,6 @@
                 btn.disabled = true;
                 btn.style.opacity = "0.5";
             };
-
             renderAll();
         };
 
@@ -446,17 +423,13 @@
             saveData();
         }
 
-        function initQuizData() {
-            classes.forEach(c => { appData.quizzes[c] = {}; });
-        }
-
         function saveData() { 
-            localStorage.setItem('app_sekolah_vfinal_game', JSON.stringify(appData)); 
+            localStorage.setItem('app_sekolah_vfinal_fix16', JSON.stringify(appData)); 
         }
 
         function resetAll() {
             if(confirm("HAPUS SEMUA DATA? Data tidak bisa dikembalikan.")) { 
-                localStorage.removeItem('app_sekolah_vfinal_game'); 
+                localStorage.removeItem('app_sekolah_vfinal_fix16'); 
                 location.reload(); 
             }
         }
@@ -469,8 +442,6 @@
                 appData.viewMode = 'absen';
                 saveData();
                 renderAll();
-                
-                // Tutup sidebar jika di mobile
                 document.getElementById('sidebar').classList.remove('open');
             }
         }
@@ -534,11 +505,11 @@
             const mthName = months[appData.currentMonthIdx];
             const clsName = classes[appData.currentClassIdx];
             let titleText = "";
-            if(appData.viewMode === 'absen') titleText = "Absensi Harian";
-            else if(appData.viewMode === 'nilai') titleText = "Input Nilai Harian";
+            if(appData.viewMode === 'absen') titleText = "Absensi (16 Pertemuan)";
+            else if(appData.viewMode === 'nilai') titleText = "Nilai Harian (16 Pertemuan)";
             else if(appData.viewMode === 'quiz') titleText = "Mode Kuis & Game PAI";
-            else if(appData.viewMode === 'recap_absen') titleText = "Rekap Absensi Bulanan";
-            else if(appData.viewMode === 'recap_nilai') titleText = "Rekap Nilai Bulanan";
+            else if(appData.viewMode === 'recap_absen') titleText = "Rekap Absensi";
+            else if(appData.viewMode === 'recap_nilai') titleText = "Rekap Nilai";
             else if(appData.viewMode === 'hasil') titleText = "Hasil Akhir Siswa";
             
             document.getElementById('pageTitle').innerText = `${titleText} - ${clsName}`;
@@ -626,6 +597,7 @@
             
             const { studentId, className, quizNum } = window.currentGame;
 
+            // Safety Check
             if(!appData.quizzes[className]) appData.quizzes[className] = {};
             if(!appData.quizzes[className][studentId]) appData.quizzes[className][studentId] = {};
 
@@ -712,9 +684,9 @@
             const mode = appData.viewMode;
 
             if (mode === 'absen') {
-                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>${i}</th>`;
+                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>Pertemuan ${i}</th>`;
             } else if (mode === 'nilai') {
-                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>${i}</th>`;
+                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>Pertemuan ${i}</th>`;
             } else if (mode === 'quiz') {
                 for(let i=1; i<=totalQuizzes; i++) thead.innerHTML += `<th>Kuis ${i}</th>`;
                 thead.innerHTML += `<th>Rata-rata</th>`;
@@ -779,6 +751,7 @@
                     const avg = count > 0 ? Math.round(sum/count) : 0;
                     rowHtml += `<td style="font-weight:bold; color:var(--secondary);">${avg}</td>`;
                 } else if (mode === 'hasil') {
+                    // Rata-rata Nilai Harian
                     let sum = 0, count = 0;
                     for(let i=1; i<=totalDays; i++) {
                         const key = `${monthIdx}-${i}`;
@@ -787,6 +760,7 @@
                     }
                     const avgDaily = count > 0 ? Math.round(sum/count) : 100; 
 
+                    // Rata-rata Kuis
                     let sumQuiz = 0, countQuiz = 0;
                     for(let i=1; i<=totalQuizzes; i++) {
                         const val = appData.quizzes[currentClass][s.id]?.[i.toString()];
@@ -794,8 +768,11 @@
                     }
                     const avgQuiz = countQuiz > 0 ? Math.round(sumQuiz/countQuiz) : 0;
 
+                    // LOGIKA: (Daily + Quiz) / 2.
+                    // Jika keduanya 100, hasilnya 100.
                     const baseScore = (avgDaily + avgQuiz) / 2;
 
+                    // Penalti Absensi
                     const counts = {H:0, S:0, I:0, A:0};
                     for(let i=1; i<=totalDays; i++) {
                         const key = `${monthIdx}-${i}`;
@@ -818,17 +795,22 @@
             });
         }
 
+        // --- FUNGSI SIMPAN DATA (FIX UNTUK INPUT ERROR) ---
         function cycleStatus(sid, key) {
             if(isLocked) return;
             const currentClass = classes[appData.currentClassIdx];
-            const current = appData.attendance[currentClass][sid]?.[key] || '';
+            
+            // Safety Check 1: Pastikan object attendance untuk kelas ini ada
+            if(!appData.attendance[currentClass]) appData.attendance[currentClass] = {};
+            // Safety Check 2: Pastikan object attendance untuk siswa ini ada
+            if(!appData.attendance[currentClass][sid]) appData.attendance[currentClass][sid] = {};
+
+            const current = appData.attendance[currentClass][sid][key] || '';
             const statuses = ['', 'H', 'S', 'I', 'A'];
             const idx = statuses.indexOf(current);
             const next = statuses[(idx + 1) % statuses.length];
             
-            if(!appData.attendance[currentClass][sid]) appData.attendance[currentClass][sid] = {};
             appData.attendance[currentClass][sid][key] = next;
-            
             saveData();
             renderTableBody();
         }
@@ -836,7 +818,11 @@
         function setGrade(sid, key, val) {
             if(isLocked) return;
             const currentClass = classes[appData.currentClassIdx];
+            
+            // Safety Check
+            if(!appData.grades[currentClass]) appData.grades[currentClass] = {};
             if(!appData.grades[currentClass][sid]) appData.grades[currentClass][sid] = {};
+
             appData.grades[currentClass][sid][key] = val;
             saveData();
         }
@@ -844,7 +830,11 @@
         function setQuiz(sid, key, val) {
             if(isLocked) return;
             const currentClass = classes[appData.currentClassIdx];
+            
+            // Safety Check
+            if(!appData.quizzes[currentClass]) appData.quizzes[currentClass] = {};
             if(!appData.quizzes[currentClass][sid]) appData.quizzes[currentClass][sid] = {};
+
             appData.quizzes[currentClass][sid][key] = val;
             saveData();
         }
@@ -853,7 +843,7 @@
             const currentClass = classes[appData.currentClassIdx];
             const students = appData.students[currentClass];
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Nama Siswa," + Array.from({length: totalDays}, (_, i) => i+1).join(",") + "\n";
+            csvContent += "Nama Siswa," + Array.from({length: totalDays}, (_, i) => `Pertemuan ${i+1}`).join(",") + "\n";
             students.forEach(s => {
                 let rowData = [s.name];
                 for(let i=1; i<=totalDays; i++) {
