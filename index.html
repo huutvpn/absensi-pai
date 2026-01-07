@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi & Nilai Rapih - SDN Banjarwangi</title>
+    <style>
+        :root {
+            --primary: #059669;
+            --secondary: #4f46e5;
+            --bg-body: #f0fdf4;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            
+            /* Warna Status */
+            --col-h: #dcfce7; --txt-h: #166534;
+            --col-s: #dbeafe; --txt-s: #1e40af;
+            --col-i: #fef3c7; --txt-i: #92400e;
+            --col-a: #fee2e2; --txt-a: #991b1b;
+            --col-empty: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR */
+        aside { 
+            width: 260px; 
+            background: #ffffff; 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 1.5rem; 
+            z-index: 10; 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+        }
+        
+        .school-profile { text-align: center; margin-bottom: 2rem; border-bottom: 2px dashed var(--border); padding-bottom: 1.5rem; }
+        .logo-container { width: 110px; height: 110px; margin: 0 auto 15px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid #e2e8f0; overflow: hidden; }
+        .school-logo { width: 100%; height: 100%; object-fit: contain; }
+        
+        .school-name { font-size: 1.3rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; line-height: 1.2; }
+        .mapel-badge { display: inline-block; background: var(--primary); color: white; padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-top: 8px; letter-spacing: 0.5px; }
+        .teacher-info { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; font-weight: 600; }
+
+        /* Menu Kelas */
+        .menu-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .class-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex: 1; padding-right: 5px; }
+        .class-btn { width: 100%; padding: 0.8rem; text-align: left; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; font-weight: 600; color: var(--text-main); transition: 0.2s; font-size: 0.95rem; }
+        .class-btn:hover { background: #f1f5f9; }
+        .class-btn.active { background: #ecfdf5; color: var(--primary); border-color: #6ee7b7; font-weight: 800; }
+        
+        .reset-btn { margin-top: auto; padding: 0.8rem; background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.9rem; }
+
+        /* MAIN CONTENT */
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        
+        header { background: #ffffff; padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .header-title h2 { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+        .header-actions { display: flex; gap: 12px; }
+        
+        /* Tombol Aksi */
+        .btn-action { border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; }
+        .btn-print { background-color: #3b82f6; color: white; }
+        .btn-print:hover { background-color: #2563eb; transform: translateY(-1px); }
+        .btn-download { background-color: #10b981; color: white; }
+        .btn-download:hover { background-color: #059669; transform: translateY(-1px); }
+        .btn-lock { background-color: #475569; color: white; }
+        .btn-lock:hover { background-color: #334155; }
+        .btn-lock.locked { background-color: #ef4444; }
+
+        .content-scroll { padding: 2rem; overflow-y: auto; flex: 1; }
+        
+        /* Navigasi Tab */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; background: white; padding: 10px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .nav-btn { padding: 0.8rem 1rem; border-radius: 8px; background: transparent; cursor: pointer; font-weight: 600; color: var(--text-muted); flex: 1; text-align: center; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .nav-btn:hover { background: #f8fafc; color: var(--text-main); }
+        .nav-btn.active-absen { background: #10b981; color: white; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+        .nav-btn.active-nilai { background: var(--secondary); color: white; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2); }
+        .nav-btn.active-hasil { background: #f59e0b; color: white; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); }
+
+        .add-box { display: flex; gap: 10px; margin-bottom: 1.5rem; background: white; padding: 15px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .add-input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; }
+        .add-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .add-btn { background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; }
+
+        .grid-container { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: auto; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        table { border-collapse: collapse; min-width: 100%; width: 100%; table-layout: fixed; } 
+        
+        th { background: #f8fafc; padding: 14px 10px; font-size: 0.9rem; text-align: center; border: 1px solid var(--border); position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; }
+        
+        /* --- STYLE RAPIH KELIHATAN SAAT ISI --- */
+        td { padding: 0; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; height: 55px; border-bottom: 1px solid #f1f5f9; /* Tinggi cell ditambah biar besar */ }
+        tbody tr:nth-child(even) { background-color: #fcfcfc; } 
+        tbody tr:hover { background-color: #f1f5f9; }
+
+        th.sticky-col, td.sticky-col {
+            position: sticky; left: 0; background: var(--bg-card); z-index: 10; min-width: 220px; text-align: left; padding: 0 15px; border-right: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between;
+        }
+        th.sticky-col { z-index: 15; background: #f8fafc; font-weight: 800; color: var(--primary); border-right: 2px solid #cbd5e1; }
+        
+        /* --- INPUT STYLE BESAR --- */
+        .day-cell { cursor: pointer; font-weight: 800; transition: background 0.1s; min-width: 50px; user-select: none; font-size: 1.2rem; /* Font besar biar kelihatan */ }
+        .day-cell:hover { opacity: 0.9; transform: scale(1.05); }
+        .day-cell.disabled { opacity: 0.5; cursor: not-allowed; background: #e2e8f0 !important; } 
+        
+        .status-H { background-color: var(--col-h); color: var(--txt-h); }
+        .status-S { background-color: var(--col-s); color: var(--txt-s); }
+        .status-I { background-color: var(--col-i); color: var(--txt-i); }
+        .status-A { background-color: var(--col-a); color: var(--txt-a); }
+        .status- { background-color: var(--col-empty); color: #ccc; }
+
+        .grade-input { width: 100%; height: 100%; border: none; text-align: center; font-weight: 700; color: var(--secondary); background: transparent; outline: none; font-size: 1.3rem; transition: background 0.2s; /* Font input besar */ }
+        .grade-input:focus { background: #e0e7ff; }
+        .grade-input:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; } 
+
+        /* Hasil Akhir Styles */
+        .score-badge { display: inline-block; padding: 6px 14px; border-radius: 6px; font-weight: 800; font-size: 1.2rem; min-width: 55px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .score-high { background: #dcfce7; color: #166534; border: 1px solid #86efac; } 
+        .score-med { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; } 
+        .score-low { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .info-box { background: #fffbeb; color: #92400e; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.5rem; border: 1px solid #fcd34d; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        .btn-del { color: #cbd5e2; cursor: pointer; font-weight: bold; font-size: 1.3rem; line-height: 1; padding: 0 8px; }
+        .btn-del:hover { color: #ef4444; }
+
+        /* Mobile */
+        .menu-toggle { display: none; background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-main); }
+        @media (max-width: 768px) {
+            aside { position: absolute; height: 100%; transform: translateX(-100%); transition: transform 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.1); width: 270px; }
+            aside.open { transform: translateX(0); }
+            .menu-toggle { display: block; }
+            .nav-tabs { overflow-x: auto; padding: 5px; }
+            .nav-btn { flex: 0 0 auto; min-width: 130px; }
+            .header-title h2 { font-size: 1rem; }
+            .header-actions span { display: none; }
+            .grid-container { border-radius: 8px; }
+            td { height: 50px; } /* Sedikit lebih kecil di HP */
+        }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            aside, .add-box, .nav-tabs, .info-box, .header-actions, .menu-toggle, .grid-container { display: none !important; }
+            main, .content-scroll, body { height: auto !important; overflow: visible !important; display: block !important; background: white !important; padding: 0 !important; margin: 0 !important; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 30px; }
+            table { width: 100%; font-size: 10pt; }
+            th, td { border: 1px solid #000 !important; color: #000 !important; }
+            .school-profile { border: none; margin-bottom: 10px; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Khusus Print -->
+    <div class="print-header">
+        <div style="display:flex; justify-content:center; margin-bottom:20px;">
+            <img src="./logo-sdn-banjarwangi.png" alt="Logo SDN Banjarwangi" style="width:100px; height:100px; object-fit:contain;">
+        </div>
+        <h1 style="font-size:28px; text-transform:uppercase; margin:0; color:#000;">SDN BANJARWANGI</h1>
+        <h3 style="margin:0; color:#000;">Pendidikan Agama Islam</h3>
+        <p style="margin:5px 0 20px 0; font-weight:bold; color:#000;">Laporan Hasil Belajar Siswa</p>
+        <div style="border-top: 3px double #000; margin: 20px 0;"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="school-profile">
+            <div class="logo-container">
+                <img src="./logo-sdn-banjarwangi.png" onerror="this.src='https://via.placeholder.com/150?text=LOGO';" class="school-logo">
+            </div>
+            <h2 class="school-name">SDN Banjarwangi</h2>
+            <div class="mapel-badge">Pendidikan Agama Islam</div>
+            <div class="teacher-info">Guru: <span id="lblTeacher">SHABUDIN</span></div>
+        </div>
+
+        <div class="menu-label">Pilih Kelas</div>
+        <ul class="class-list" id="classList"></ul>
+        
+        <div style="margin-top:auto;">
+            <button class="btn-action" onclick="resetAll()" style="background:#fee2e2; color:#ef4444; width:100%; justify-content:center; padding:10px; border:none; border-radius:8px; font-weight:700; cursor:pointer;">
+                🗑️ Reset Data
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <header>
+            <div class="header-title">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2 id="pageTitle">Sistem Absensi</h2>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button class="btn-action btn-lock" id="btnLock" onclick="toggleLock()">
+                    🔓 <span>Buka/Kunci</span>
+                </button>
+                <button class="btn-action btn-print" onclick="window.print()">
+                    🖨️ <span>Cetak Laporan</span>
+                </button>
+                <button class="btn-action btn-download" onclick="downloadCSV()">
+                    📥 <span>Unduh Excel</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            
+            <!-- 5 PILIHAN MENU -->
+            <div class="nav-tabs">
+                <button class="nav-btn" id="btnAbsen" onclick="switchView('absen')">📅 Absensi Harian</button>
+                <button class="nav-btn" id="btnNilai" onclick="switchView('nilai')">💯 Input Nilai Harian</button>
+                <button class="nav-btn" id="btnRecapAbsen" onclick="switchView('recap_absen')">📊 Rekap Absensi Bulanan</button>
+                <button class="nav-btn" id="btnRecapNilai" onclick="switchView('recap_nilai')">📈 Rekap Nilai Bulanan</button>
+                <button class="nav-btn" id="btnHasil" onclick="switchView('hasil')">🚀 Hasil Akhir (Rekap Semua)</button>
+            </div>
+
+            <!-- INFO PENJELASAN -->
+            <div id="logicInfo" class="info-box" style="display:none;">
+                <span>📊 Logika Perhitungan Nilai Akhir:</span> 
+                (Rata-rata Nilai Harian / Nilai Default 100) - (Alpha × 5) - (Sakit × 2) - (Izin × 2).
+            </div>
+
+            <!-- INPUT SISWA BARU -->
+            <div class="add-box">
+                <input type="text" id="inpName" class="add-input" placeholder="Ketik nama siswa baru..." onkeypress="handleEnter(event)">
+                <button class="add-btn" onclick="addStudent()">+ Tambah Siswa</button>
+            </div>
+
+            <!-- TABEL UTAMA -->
+            <div class="grid-container">
+                <table id="mainTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            <th class="sticky-col">Nama Siswa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- KONFIGURASI ---
+        const TEACHER_NAME = "SHABUDIN";
+        const classes = ["Kelas 4A", "Kelas 4B", "Kelas 4C", "Kelas 3A", "Kelas 3B", "Kelas 3C"];
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const totalDays = 31; 
+
+        // PENALTI
+        const PENALTI_ALPHA = 5;
+        const PENALTI_SAKIT = 2;
+        const PENALTI_IZIN = 2;
+
+        let isLocked = false; // Status Kunci
+
+        let appData = { 
+            currentClassIdx: 0, 
+            currentMonthIdx: 0,
+            viewMode: 'absen', // 'absen', 'nilai', 'recap_absen', 'recap_nilai', 'hasil'
+            students: {}, 
+            attendance: {},
+            grades: {}
+        };
+
+        window.onload = function() {
+            const saved = localStorage.getItem('app_sekolah_vfinal_rapih');
+            if (saved) { appData = JSON.parse(saved); } 
+            else { initEmptyData(); }
+            
+            document.getElementById('lblTeacher').innerText = TEACHER_NAME;
+            renderAll();
+        };
+
+        function initEmptyData() {
+            classes.forEach(c => { 
+                appData.students[c] = []; 
+                appData.attendance[c] = {};
+                appData.grades[c] = {}; 
+            });
+            save();
+        }
+
+        function save() { localStorage.setItem('app_sekolah_vfinal_rapih', JSON.stringify(appData)); }
+
+        function resetAll() {
+            if(confirm("HAPUS SEMUA DATA? Data tidak bisa dikembalikan.")) { 
+                localStorage.removeItem('app_sekolah_vfinal_rapih'); 
+                location.reload(); 
+            }
+        }
+
+        function renderAll() {
+            renderSidebar(); 
+            renderTableHeader(); 
+            renderTableBody(); 
+            updateInfoBox();
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('classList');
+            list.innerHTML = '';
+            classes.forEach((c, idx) => {
+                const li = document.createElement('li');
+                const btn = document.createElement('button');
+                btn.className = `class-btn ${idx === appData.currentClassIdx ? 'active' : ''}`;
+                btn.innerText = c;
+                btn.onclick = () => switchClass(idx);
+                li.appendChild(btn);
+                list.appendChild(li);
+            });
+            
+            // Update Title Header
+            const mthName = months[appData.currentMonthIdx];
+            const clsName = classes[appData.currentClassIdx];
+            let titleText = "";
+            if(appData.viewMode === 'absen') titleText = "Absensi Harian";
+            else if(appData.viewMode === 'nilai') titleText = "Input Nilai Harian";
+            else if(appData.viewMode === 'recap_absen') titleText = "Rekap Absensi Bulanan";
+            else if(appData.viewMode === 'recap_nilai') titleText = "Rekap Nilai Bulanan";
+            else if(appData.viewMode === 'hasil') titleText = "Hasil Akhir Siswa";
+            
+            document.getElementById('pageTitle').innerText = `${titleText} - ${clsName} (${mthName})`;
+        }
+
+        function switchView(mode) {
+            appData.viewMode = mode;
+            document.getElementById('btnAbsen').className = "nav-btn";
+            document.getElementById('btnNilai').className = "nav-btn";
+            document.getElementById('btnRecapAbsen').className = "nav-btn";
+            document.getElementById('btnRecapNilai').className = "nav-btn";
+            document.getElementById('btnHasil').className = "nav-btn";
+
+            if(mode === 'absen') document.getElementById('btnAbsen').classList.add('active-absen');
+            else if(mode === 'nilai') document.getElementById('btnNilai').classList.add('active-nilai');
+            else if(mode === 'recap_absen') document.getElementById('btnRecapAbsen').classList.add('active-absen');
+            else if(mode === 'recap_nilai') document.getElementById('btnRecapNilai').classList.add('active-nilai');
+            else if(mode === 'hasil') document.getElementById('btnHasil').classList.add('active-hasil');
+
+            renderTableHeader();
+            renderTableBody();
+            updateInfoBox();
+        }
+
+        function updateInfoBox() {
+            const info = document.getElementById('logicInfo');
+            info.style.display = (appData.viewMode === 'hasil') ? 'flex' : 'none';
+        }
+
+        function toggleLock() {
+            isLocked = !isLocked;
+            const btn = document.getElementById('btnLock');
+            if(isLocked) {
+                btn.classList.add('locked');
+                btn.innerHTML = '🔒 <span>Terkunci</span>'; // Merah
+            } else {
+                btn.classList.remove('locked');
+                btn.innerHTML = '🔓 <span>Buka/Kunci</span>'; // Abu
+            }
+            renderTableBody();
+        }
+
+        function renderTableHeader() {
+            const tr = document.getElementById('tableHeader');
+            tr.innerHTML = '<th class="sticky-col">Nama Siswa</th>';
+            
+            if (appData.viewMode === 'absen') {
+                for(let i=1; i<=totalDays; i++) {
+                    const th = document.createElement('th');
+                    th.innerText = i;
+                    tr.appendChild(th);
+                }
+            } else if (appData.viewMode === 'nilai') {
+                for(let i=1; i<=totalDays; i++) {
+                    const th = document.createElement('th');
+                    th.innerText = i;
+                    tr.appendChild(th);
+                }
+            } else if (appData.viewMode === 'recap_absen') {
+                tr.innerHTML += `<th>Total Hadir</th><th>Total Sakit</th><th>Total Izin</th><th>Total Alpha</th>`;
+            } else if (appData.viewMode === 'recap_nilai') {
+                tr.innerHTML += `<th>Jumlah Nilai</th><th>Rata-rata Nilai</th><th>Status KKM</th>`;
+            } else if (appData.viewMode === 'hasil') {
+                tr.innerHTML += `<th>Rata-rata Dasar</th><th>Absen (H/S/I/A)</th><th>Penalti</th><th style="color:#166534;">Nilai Akhir</th>`;
+            }
+        }
+
+        function renderTableBody() {
+            const cls = classes[appData.currentClassIdx];
+            const mth = months[appData.currentMonthIdx];
+            const students = appData.students[cls] || [];
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if(students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:3rem; color:#aaa;">Belum ada data siswa.</td></tr>`;
+                return;
+            }
+
+            students.forEach((name, idx) => {
+                const tr = document.createElement('tr');
+                
+                // Kolom Nama
+                const tdName = document.createElement('td');
+                tdName.className = 'sticky-col';
+                tdName.innerHTML = `<span>${name}</span> <span class="btn-del" onclick="deleteStudent(${idx})">&times;</span>`;
+                tr.appendChild(tdName);
+
+                if (appData.viewMode === 'absen') {
+                    // MODE INPUT ABSEN (UI RAPIH)
+                    for(let day=1; day<=totalDays; day++) {
+                        const td = document.createElement('td');
+                        let status = "";
+                        if (appData.attendance[cls] && appData.attendance[cls][name] && appData.attendance[cls][name][mth]) {
+                            status = appData.attendance[cls][name][mth][day] || "";
+                        }
+                        const extraClass = isLocked ? 'disabled' : '';
+                        
+                        td.className = `day-cell status-${status} ${extraClass}`;
+                        td.innerText = status;
+                        if(!isLocked) {
+                            td.onclick = () => toggleStatus(cls, name, mth, day);
+                        }
+                        tr.appendChild(td);
+                    }
+                } else if (appData.viewMode === 'nilai') {
+                    // MODE INPUT NILAI (UI RAPIH)
+                    for(let day=1; day<=totalDays; day++) {
+                        const td = document.createElement('td');
+                        let grade = "";
+                        if (appData.grades[cls] && appData.grades[cls][name] && appData.grades[cls][name][mth]) {
+                            grade = appData.grades[cls][name][mth][day] || "";
+                        }
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.className = 'grade-input';
+                        input.value = grade;
+                        input.placeholder = "-";
+                        // Jika Terkunci, Disable Input
+                        if(isLocked) {
+                            input.setAttribute('disabled', 'true');
+                            input.classList.add('grade-input:disabled');
+                        } else {
+                            input.onchange = (e) => updateGrade(cls, name, mth, day, e.target.value);
+                        }
+                        td.appendChild(input);
+                        tr.appendChild(td);
+                    }
+                } else if (appData.viewMode === 'recap_absen') {
+                    // MODE REKAP ABSEN
+                    let counts = {h:0, s:0, i:0, a:0};
+                    let attData = appData.attendance[cls][name] && appData.attendance[cls][name][mth] ? appData.attendance[cls][name][mth] : {};
+                    for(let d=1; d<=totalDays; d++) {
+                        let s = attData[d];
+                        if(s == 'H') counts.h++; else if(s == 'S') counts.s++; else if(s == 'I') counts.i++; else if(s == 'A') counts.a++;
+                    }
+                    tr.innerHTML += `
+                        <td style="font-weight:bold; color:var(--txt-h); font-size:1.1rem;">${counts.h}</td>
+                        <td style="font-weight:bold; color:var(--txt-s); font-size:1.1rem;">${counts.s}</td>
+                        <td style="font-weight:bold; color:var(--txt-i); font-size:1.1rem;">${counts.i}</td>
+                        <td style="font-weight:bold; color:var(--txt-a); font-size:1.1rem;">${counts.a}</td>
+                    `;
+                } else if (appData.viewMode === 'recap_nilai') {
+                    // MODE REKAP NILAI
+                    let totalNilai = 0;
+                    let countNilai = 0;
+                    let gradeData = appData.grades[cls][name] && appData.grades[cls][name][mth] ? appData.grades[cls][name][mth] : {};
+                    for(let d=1; d<=totalDays; d++) {
+                        if(gradeData[d] && gradeData[d] !== "") {
+                            totalNilai += parseInt(gradeData[d]);
+                            countNilai++;
+                        }
+                    }
+                    let avgNilai = countNilai > 0 ? (totalNilai / countNilai).toFixed(1) : "0";
+                    let statusKKM = "";
+                    if(avgNilai >= 75) statusKKM = "<span style='color:green; font-weight:bold; font-size:1rem;'>Tuntas</span>";
+                    else statusKKM = "<span style='color:red; font-weight:bold; font-size:1rem;'>Perlu Perbaikan</span>";
+
+                    tr.innerHTML += `
+                        <td style="font-weight:bold; color:#4f46e5; font-size:1.1rem;">${countNilai}</td>
+                        <td style="font-weight:bold; color:#4f46e5; font-size:1.1rem;">${avgNilai}</td>
+                        <td>${statusKKM}</td>
+                    `;
+                } else if (appData.viewMode === 'hasil') {
+                    // MODE HASIL AKHIR
+                    let totalNilai = 0;
+                    let countNilai = 0;
+                    let gradeData = appData.grades[cls][name] && appData.grades[cls][name][mth] ? appData.grades[cls][name][mth] : {};
+                    for(let d=1; d<=totalDays; d++) {
+                        if(gradeData[d] && gradeData[d] !== "") {
+                            totalNilai += parseInt(gradeData[d]);
+                            countNilai++;
+                        }
+                    }
+                    let avgNilai = countNilai > 0 ? (totalNilai / countNilai).toFixed(1) : "-";
+
+                    let counts = {h:0, s:0, i:0, a:0};
+                    let attData = appData.attendance[cls][name] && appData.attendance[cls][name][mth] ? appData.attendance[cls][name][mth] : {};
+                    for(let d=1; d<=totalDays; d++) {
+                        let s = attData[d];
+                        if(s == 'H') counts.h++; else if(s == 'S') counts.s++; else if(s == 'I') counts.i++; else if(s == 'A') counts.a++;
+                    }
+                    let totalPenalty = (counts.a * PENALTI_ALPHA) + (counts.s * PENALTI_SAKIT) + (counts.i * PENALTI_IZIN);
+
+                    let baseScore = (avgNilai !== "-") ? parseFloat(avgNilai) : 100;
+                    let finalScore = baseScore - totalPenalty;
+                    if(finalScore < 0) finalScore = 0;
+                    finalScore = finalScore.toFixed(1);
+
+                    tr.innerHTML += `
+                        <td style="font-weight:bold; color:#4f46e5;">${avgNilai} <span style="font-size:0.8em; color:#999;">(${countNilai > 0 ? 'Dari Nilai' : 'Default 100'})</span></td>
+                        <td><span style="font-size:0.85rem;">H:${counts.h} S:${counts.s} I:${counts.i} A:${counts.a}</span></td>
+                        <td style="color:#ef4444; font-weight:700;">-${totalPenalty}</td>
+                        <td>
+                            <span class="score-badge ${finalScore >= 80 ? 'score-high' : finalScore >= 60 ? 'score-med' : 'score-low'}">
+                                ${finalScore}
+                            </span>
+                        </td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- LOGIC FUNGSI ---
+        function toggleStatus(cls, name, mth, day) {
+            if(!appData.attendance[cls][name]) appData.attendance[cls][name] = {};
+            if(!appData.attendance[cls][name][mth]) appData.attendance[cls][name][mth] = {};
+            const statusCycle = ["H", "S", "I", "A", ""];
+            const currentStatus = appData.attendance[cls][name][mth][day] || "";
+            const currentIndex = statusCycle.indexOf(currentStatus);
+            const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
+            appData.attendance[cls][name][mth][day] = nextStatus;
+            save();
+            renderTableBody(); 
+        }
+
+        function updateGrade(cls, name, mth, day, value) {
+            if(!appData.grades[cls][name]) appData.grades[cls][name] = {};
+            if(!appData.grades[cls][name][mth]) appData.grades[cls][name][mth] = {};
+            appData.grades[cls][name][mth][day] = value;
+            
+            // --- OTOMATIS HADIR (AUTO PRESENT) ---
+            // Jika ada nilai, otomatis jadi Hadir (H)
+            if (value !== "") {
+                if(!appData.attendance[cls][name]) appData.attendance[cls][name] = {};
+                if(!appData.attendance[cls][name][mth]) appData.attendance[cls][name][mth] = {};
+                appData.attendance[cls][name][mth][day] = "H";
+            }
+            save();
+        }
+
+        // --- UTILITY ---
+        function handleEnter(e) { if(e.key === 'Enter') addStudent(); }
+        function addStudent() {
+            const inp = document.getElementById('inpName');
+            const name = inp.value.trim();
+            const cls = classes[appData.currentClassIdx];
+            if(!name) return alert("Nama kosong!");
+            if(appData.students[cls].includes(name)) return alert("Nama sudah ada!");
+            appData.students[cls].push(name);
+            save();
+            renderTableBody(); 
+            inp.value = ''; inp.focus();
+        }
+        function deleteStudent(idx) {
+            const cls = classes[appData.currentClassIdx];
+            const name = appData.students[cls][idx];
+            if(confirm(`Hapus ${name}?`)) {
+                appData.students[cls].splice(idx, 1);
+                delete appData.attendance[cls][name];
+                delete appData.grades[cls][name]; 
+                save();
+                renderTableBody();
+            }
+        }
+        function switchClass(idx) { appData.currentClassIdx = idx; renderAll(); document.getElementById('inpName').value = ''; if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open'); }
+        
+        function renderTabs() {
+            const content = document.querySelector('.content-scroll');
+            const existingTabs = document.getElementById('monthTabs');
+            if(existingTabs) existingTabs.innerHTML = '';
+            else {
+                const div = document.createElement('div');
+                div.id = 'monthTabs';
+                div.className = 'nav-tabs';
+                div.style.marginBottom = '0';
+                div.style.marginTop = '1rem';
+                div.style.background = 'transparent';
+                div.style.boxShadow = 'none';
+                div.style.border = 'none';
+                content.insertBefore(div, document.getElementById('logicInfo'));
+            }
+            
+            const containerTabs = document.getElementById('monthTabs');
+            months.forEach((m, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `nav-btn ${idx === appData.currentMonthIdx ? 'active-absen' : ''}`;
+                btn.style.flex = "0 0 auto";
+                btn.style.minWidth = "80px";
+                btn.innerText = m;
+                btn.onclick = () => switchMonth(idx);
+                containerTabs.appendChild(btn);
+            });
+        }
+        
+        function switchMonth(idx) { 
+            appData.currentMonthIdx = idx; 
+            renderSidebar(); // Update title
+            renderTabs();
+            renderTableBody(); 
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        // --- DOWNLOAD CSV (HASIL AKHIR) ---
+        function downloadCSV() {
+            const cls = classes[appData.currentClassIdx];
+            const mth = months[appData.currentMonthIdx];
+            const students = appData.students[cls] || [];
+            if(students.length === 0) { alert("Tidak ada data."); return; }
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            csvContent += `Laporan Hasil Belajar Siswa\n`;
+            csvContent += `========================================\n`;
+            csvContent += `Nama Sekolah: SDN Banjarwangi\n`;
+            csvContent += `Mata Pelajaran: Pendidikan Agama Islam\n`;
+            csvContent += `Guru: ${TEACHER_NAME}\n`;
+            csvContent += `Kelas: ${cls} | Periode: ${mth}\n`;
+            csvContent += `========================================\n\n`;
+
+            let headers = ["No", "Nama Siswa", "Rata-rata Nilai Harian", "Ringkasan Absen", "Pengurangan Penalti", "Nilai Akhir"];
+            csvContent += headers.join(",") + "\r\n";
+
+            students.forEach((name, index) => {
+                let totalNilai = 0, countNilai = 0;
+                let gradeData = appData.grades[cls][name] && appData.grades[cls][name][mth] ? appData.grades[cls][name][mth] : {};
+                for(let d=1; d<=totalDays; d++) {
+                    if(gradeData[d] && gradeData[d] !== "") {
+                        totalNilai += parseInt(gradeData[d]); countNilai++;
+                    }
+                }
+                let avgNilai = countNilai > 0 ? (totalNilai / countNilai).toFixed(1) : "100"; 
+
+                let counts = {h:0, s:0, i:0, a:0};
+                let attData = appData.attendance[cls][name] && appData.attendance[cls][name][mth] ? appData.attendance[cls][name][mth] : {};
+                for(let d=1; d<=totalDays; d++) {
+                    let s = attData[d];
+                    if(s == 'H') counts.h++; else if(s == 'S') counts.s++; else if(s == 'I') counts.i++; else if(s == 'A') counts.a++;
+                }
+                let totalPenalty = (counts.a * PENALTI_ALPHA) + (counts.s * PENALTI_SAKIT) + (counts.i * PENALTI_IZIN);
+                let baseScore = parseFloat(avgNilai);
+                let finalScore = Math.max(0, (baseScore - totalPenalty)).toFixed(1);
+
+                let row = [index + 1, `"${name}"`, avgNilai, `H:${counts.h} S:${counts.s} I:${counts.i} A:${counts.a}`, totalPenalty > 0 ? `-${totalPenalty}` : "0", finalScore];
+                csvContent += row.join(",") + "\r\n";
+            });
+
+            var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Laporan_Hasil_Akhir_${TEACHER_NAME}_${cls}_${mth}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
