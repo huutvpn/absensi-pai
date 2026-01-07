@@ -10,6 +10,7 @@
             --secondary: #4f46e5;
             --quiz-color: #db2777;
             --music-color: #8b5cf6;
+            --home-color: #0ea5e9; /* Warna Biru untuk Tombol Home */
             --bg-body: #f0fdf4;
             --bg-card: #ffffff;
             --text-main: #1e293b;
@@ -53,14 +54,32 @@
         .header-title h2 { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
         .header-actions { display: flex; gap: 10px; }
         
-        .btn-action { border: none; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s; }
+        .btn-action { border: none; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s; width: 100%; justify-content: center; }
         .btn-music { background-color: var(--music-color); color: white; }
         .btn-music:hover { background-color: #7c3aed; transform: translateY(-2px); }
         .btn-lock { background-color: #475569; color: white; }
         .btn-lock.locked { background-color: #ef4444; }
         .btn-print { background-color: #3b82f6; color: white; }
         .btn-download { background-color: #10b981; color: white; }
-        .btn-reset { margin-top: auto; width: 100%; background: #fee2e2; color: #ef4444; padding: 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; }
+        
+        /* TOMBOL FOOTER SIDEBAR */
+        .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+        
+        .btn-home { 
+            background-color: var(--home-color); color: white; padding: 0.8rem; 
+            border-radius: 8px; border: none; cursor: pointer; font-weight: 700; 
+            font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-home:hover { background-color: #0284c7; transform: translateY(-1px); }
+        
+        .btn-reset { 
+            background: #fee2e2; color: #ef4444; padding: 0.8rem; 
+            border-radius: 8px; border: none; cursor: pointer; font-weight: 700; 
+            font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-reset:hover { background: #fecaca; }
 
         /* Animasi Musik */
         .music-playing { animation: pulse-glow 1.5s infinite; }
@@ -81,7 +100,7 @@
         .nav-btn.active-kuis { background: var(--quiz-color); color: white; box-shadow: 0 2px 4px rgba(219, 39, 119, 0.2); }
         .nav-btn.active-hasil { background: #f59e0b; color: white; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); }
 
-        /* GAME AREA (Tampilan Awal Kuis) */
+        /* GAME AREA */
         .game-container {
             background: white; padding: 2rem; border-radius: 15px;
             box-shadow: 0 10px 25px rgba(219, 39, 119, 0.15);
@@ -104,7 +123,6 @@
         }
         .btn-start-game:hover { transform: scale(1.02); opacity: 0.9; }
 
-        /* Pertanyaan Game */
         .question-card { margin-bottom: 1.5rem; text-align: left; padding: 1.5rem; background: #fdf2f8; border-radius: 10px; border: 1px solid #fbcfe8; }
         .q-text { font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; color: #831843; }
         .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -224,7 +242,15 @@
         <div class="menu-label">Pilih Kelas</div>
         <ul class="class-list" id="classList"></ul>
         
-        <button class="btn-reset" onclick="resetAll()">🗑️ Reset Data</button>
+        <!-- FOOTER SIDEBAR (MENU UTAMA & RESET) -->
+        <div class="sidebar-footer">
+            <button class="btn-home" onclick="goToHome()">
+                🏠 Menu Utama
+            </button>
+            <button class="btn-reset" onclick="resetAll()">
+                🗑️ Reset Data
+            </button>
+        </div>
     </aside>
 
     <!-- MAIN CONTENT -->
@@ -265,10 +291,9 @@
                 <button class="nav-btn" id="btnHasil" onclick="switchView('hasil')">🚀 Hasil Akhir</button>
             </div>
 
-            <!-- GAME KUIS (HANYA MUNCUL DI MODE KUIS) -->
+            <!-- GAME KUIS -->
             <div id="gameArea" class="hidden">
-                
-                <!-- BAGIAN 1: FORM INPUT -->
+                <!-- FORM INPUT -->
                 <div id="gameIntro" class="game-container">
                     <h2 class="game-title">🎮 Kuis Pendidikan Agama Islam</h2>
                     <p class="game-desc">Masukkan data diri untuk memulai kuis interaktif.</p>
@@ -305,14 +330,14 @@
                     <button class="btn-start-game" onclick="startGame()">MULAI KUIS 🚀</button>
                 </div>
 
-                <!-- BAGIAN 2: PERTANYAAN -->
+                <!-- PERTANYAAN -->
                 <div id="gameQuestions" class="game-container hidden">
                     <h2 class="game-title" style="font-size:1.5rem;">Jawab Pertanyaan Berikut:</h2>
                     <div id="questionsRender"></div>
                     <button class="btn-start-game" onclick="submitGame()" style="background:var(--primary); margin-top:20px;">SELESAI & SIMPAN NILAI 💾</button>
                 </div>
 
-                <!-- BAGIAN 3: HASIL -->
+                <!-- HASIL -->
                 <div id="gameResult" class="game-container hidden">
                     <div class="result-box">
                         <h3>Nilai Kamu:</h3>
@@ -323,7 +348,6 @@
                 </div>
 
             </div>
-            <!-- END GAME AREA -->
 
             <!-- INFO LOGIKA -->
             <div id="logicInfo" class="info-box" style="display:none;">
@@ -431,20 +455,34 @@
         }
 
         function resetAll() {
-            if(confirm("HAPUS SEMUA DATA?")) { 
+            if(confirm("HAPUS SEMUA DATA? Data tidak bisa dikembalikan.")) { 
                 localStorage.removeItem('app_sekolah_vfinal_game'); 
                 location.reload(); 
             }
         }
 
-        // --- GAME LOGIC ---
+        // --- FITUR KEMBALI KE MENU UTAMA ---
+        function goToHome() {
+            if(confirm("Kembali ke tampilan awal (Kelas 4A / Tab Absensi)?")) {
+                appData.currentClassIdx = 0;
+                appData.currentMonthIdx = 0;
+                appData.viewMode = 'absen';
+                saveData();
+                renderAll();
+                
+                // Tutup sidebar jika di mobile
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+
+        // --- RENDER UTAMA ---
         function renderAll() {
             renderSidebar(); 
             renderTableHeader(); 
             renderTableBody(); 
             updateInfoBox();
             updateTitle();
-            updateGameUI(); // Refresh data list in game
+            updateGameUI();
         }
 
         function renderSidebar() {
@@ -478,11 +516,10 @@
             else if(mode === 'recap_nilai') document.getElementById('btnRecapNilai').classList.add('active-nilai');
             else if(mode === 'hasil') document.getElementById('btnHasil').classList.add('active-hasil');
 
-            // Tampilkan Game Area hanya di mode Kuis
             const gameArea = document.getElementById('gameArea');
             if(mode === 'quiz') {
                 gameArea.classList.remove('hidden');
-                resetGame(); // Pastikan game reset ke awal saat buka tab
+                resetGame(); 
             } else {
                 gameArea.classList.add('hidden');
             }
@@ -514,7 +551,6 @@
 
         // --- GAME FUNCTIONS ---
         function updateGameUI() {
-            // Populate Dropdown Kelas
             const clsSelect = document.getElementById('gameClassSelect');
             clsSelect.innerHTML = '';
             classes.forEach((c, idx) => {
@@ -525,7 +561,6 @@
                 clsSelect.appendChild(opt);
             });
 
-            // Populate Datalist Nama Siswa
             const dl = document.getElementById('studentDatalist');
             dl.innerHTML = '';
             const currentClass = classes[appData.currentClassIdx];
@@ -545,7 +580,6 @@
 
             if(!studentName) return alert("Nama harus diisi!");
             
-            // VALIDASI SISWA
             const student = appData.students[clsName].find(s => s.name.toLowerCase() === studentName.toLowerCase());
 
             if(!student) {
@@ -553,7 +587,6 @@
                 return;
             }
 
-            // Simpan state game
             window.currentGame = {
                 studentId: student.id,
                 studentName: student.name,
@@ -561,7 +594,6 @@
                 quizNum: quizNum
             };
 
-            // Render Soal
             const container = document.getElementById('questionsRender');
             container.innerHTML = '';
             
@@ -576,7 +608,6 @@
                 container.appendChild(div);
             });
 
-            // Ganti Tampilan
             document.getElementById('gameIntro').classList.add('hidden');
             document.getElementById('gameQuestions').classList.remove('hidden');
             document.getElementById('gameResult').classList.add('hidden');
@@ -591,10 +622,8 @@
                 }
             });
 
-            // Hitung Nilai
-            const score = correctCount * 10; // 10 poin per soal
+            const score = correctCount * 10;
             
-            // SIMPAN NILAI OTOMATIS
             const { studentId, className, quizNum } = window.currentGame;
 
             if(!appData.quizzes[className]) appData.quizzes[className] = {};
@@ -602,15 +631,13 @@
 
             appData.quizzes[className][studentId][quizNum] = score;
             saveData();
-
-            // Tampilkan Hasil
+            
             document.getElementById('finalScoreDisplay').innerText = score;
             document.getElementById('resultMessage').innerText = `Hebat ${window.currentGame.studentName}! Nilai ${score} telah disimpan otomatis ke Rekap Kuis ${quizNum}.`;
 
             document.getElementById('gameQuestions').classList.add('hidden');
             document.getElementById('gameResult').classList.remove('hidden');
 
-            // Refresh tabel di latar belakang
             renderTableBody();
         }
 
@@ -666,7 +693,7 @@
             document.getElementById('inpName').value = '';
             saveData();
             renderTableBody();
-            updateGameUI(); // Refresh game datalist
+            updateGameUI();
         }
 
         function handleEnter(e) { if(e.key === 'Enter') addStudent(); }
