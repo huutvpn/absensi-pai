@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi & Game Kuis PAI - SDN Banjarwangi</title>
+    <style>
+        :root {
+            --primary: #059669;
+            --secondary: #4f46e5;
+            --quiz-color: #db2777;
+            --music-color: #8b5cf6;
+            --bg-body: #f0fdf4;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            
+            --col-h: #dcfce7; --txt-h: #166534;
+            --col-s: #dbeafe; --txt-s: #1e40af;
+            --col-i: #fef3c7; --txt-i: #92400e;
+            --col-a: #fee2e2; --txt-a: #991b1b;
+            --col-empty: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR */
+        aside { 
+            width: 260px; background: #ffffff; border-right: 1px solid var(--border); 
+            display: flex; flex-direction: column; padding: 1.5rem; z-index: 10; box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+        }
+        
+        .school-profile { text-align: center; margin-bottom: 2rem; border-bottom: 2px dashed var(--border); padding-bottom: 1.5rem; }
+        .logo-container { width: 100px; height: 100px; margin: 0 auto 15px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid #e2e8f0; overflow: hidden; }
+        .school-logo { width: 100%; height: 100%; object-fit: contain; }
+        
+        .school-name { font-size: 1.2rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; line-height: 1.2; }
+        .mapel-badge { display: inline-block; background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-top: 8px; }
+        .teacher-info { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; font-weight: 600; }
+
+        .menu-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .class-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex: 1; padding-right: 5px; }
+        .class-btn { width: 100%; padding: 0.8rem; text-align: left; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; font-weight: 600; color: var(--text-main); transition: 0.2s; font-size: 0.95rem; }
+        .class-btn:hover { background: #f1f5f9; }
+        .class-btn.active { background: #ecfdf5; color: var(--primary); border-color: #6ee7b7; font-weight: 800; }
+
+        /* MAIN CONTENT */
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        
+        header { background: #ffffff; padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .header-title h2 { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+        .header-actions { display: flex; gap: 10px; }
+        
+        .btn-action { border: none; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s; }
+        .btn-music { background-color: var(--music-color); color: white; }
+        .btn-music:hover { background-color: #7c3aed; transform: translateY(-2px); }
+        .btn-lock { background-color: #475569; color: white; }
+        .btn-lock.locked { background-color: #ef4444; }
+        .btn-print { background-color: #3b82f6; color: white; }
+        .btn-download { background-color: #10b981; color: white; }
+        .btn-reset { margin-top: auto; width: 100%; background: #fee2e2; color: #ef4444; padding: 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; }
+
+        /* Animasi Musik */
+        .music-playing { animation: pulse-glow 1.5s infinite; }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+
+        .content-scroll { padding: 2rem; overflow-y: auto; flex: 1; }
+        
+        /* Navigasi Tab */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; background: white; padding: 8px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .nav-btn { padding: 0.8rem; border-radius: 8px; background: transparent; cursor: pointer; font-weight: 600; color: var(--text-muted); flex: 1; text-align: center; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .nav-btn:hover { background: #f8fafc; color: var(--text-main); }
+        .nav-btn.active-absen { background: #10b981; color: white; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+        .nav-btn.active-nilai { background: var(--secondary); color: white; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2); }
+        .nav-btn.active-kuis { background: var(--quiz-color); color: white; box-shadow: 0 2px 4px rgba(219, 39, 119, 0.2); }
+        .nav-btn.active-hasil { background: #f59e0b; color: white; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); }
+
+        /* GAME AREA (Tampilan Awal Kuis) */
+        .game-container {
+            background: white; padding: 2rem; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(219, 39, 119, 0.15);
+            border: 2px solid #fce7f3; margin-bottom: 2rem;
+            text-align: center;
+            max-width: 800px; margin-left: auto; margin-right: auto;
+        }
+        .game-title { font-size: 1.8rem; font-weight: 900; color: var(--quiz-color); margin-bottom: 1rem; }
+        .game-desc { color: var(--text-muted); margin-bottom: 2rem; }
+
+        .form-group-game { margin-bottom: 1.5rem; text-align: left; }
+        .form-label-game { font-weight: 700; display: block; margin-bottom: 0.5rem; color: var(--text-main); }
+        .game-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1.1rem; outline: none; }
+        .game-input:focus { border-color: var(--quiz-color); box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1); }
+
+        .btn-start-game {
+            background: var(--quiz-color); color: white; width: 100%; padding: 15px;
+            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-start-game:hover { transform: scale(1.02); opacity: 0.9; }
+
+        /* Pertanyaan Game */
+        .question-card { margin-bottom: 1.5rem; text-align: left; padding: 1.5rem; background: #fdf2f8; border-radius: 10px; border: 1px solid #fbcfe8; }
+        .q-text { font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; color: #831843; }
+        .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .q-option { 
+            padding: 12px; background: white; border: 1px solid #fbcfe8; border-radius: 8px; 
+            cursor: pointer; transition: 0.2s; font-weight: 600; display: flex; align-items: center; gap: 10px;
+        }
+        .q-option:hover { background: #fce7f3; border-color: var(--quiz-color); }
+        .q-option input:checked + span { color: var(--quiz-color); font-weight: 800; }
+        
+        .result-box {
+            background: #dcfce7; color: #166534; padding: 2rem; border-radius: 12px;
+            border: 2px solid #86efac; margin-bottom: 1rem;
+        }
+        .result-score { font-size: 4rem; font-weight: 900; display: block; margin: 10px 0; }
+        
+        .hidden { display: none; }
+
+        /* Input Area Siswa Biasa */
+        .add-box { display: flex; gap: 10px; margin-bottom: 1.5rem; background: white; padding: 15px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .add-input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; }
+        .add-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .add-btn { background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; }
+
+        /* Table Style */
+        .grid-container { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: auto; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        table { border-collapse: collapse; min-width: 100%; width: 100%; table-layout: fixed; } 
+        
+        th { background: #f8fafc; padding: 12px 8px; font-size: 0.85rem; text-align: center; border: 1px solid var(--border); position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; }
+        td { padding: 0; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; height: 50px; border-bottom: 1px solid #f1f5f9; }
+        tbody tr:nth-child(even) { background-color: #fcfcfc; } 
+        tbody tr:hover { background-color: #f1f5f9; }
+
+        th.sticky-col, td.sticky-col {
+            position: sticky; left: 0; background: var(--bg-card); z-index: 10; min-width: 200px; text-align: left; padding: 0 15px; border-right: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between;
+        }
+        th.sticky-col { z-index: 15; background: #f8fafc; font-weight: 800; color: var(--primary); }
+        
+        .day-cell { cursor: pointer; font-weight: 800; transition: background 0.1s; user-select: none; font-size: 1.1rem; }
+        .day-cell:hover { opacity: 0.8; transform: scale(1.05); }
+        .status-H { background-color: var(--col-h); color: var(--txt-h); }
+        .status-S { background-color: var(--col-s); color: var(--txt-s); }
+        .status-I { background-color: var(--col-i); color: var(--txt-i); }
+        .status-A { background-color: var(--col-a); color: var(--txt-a); }
+        .status- { background-color: var(--col-empty); color: #ddd; }
+
+        .grade-input { width: 100%; height: 100%; border: none; text-align: center; font-weight: 700; color: var(--text-main); background: transparent; outline: none; font-size: 1.1rem; }
+        .grade-input:focus { background: #e0e7ff; }
+        .grade-input:disabled { background: #f1f5f9; color: #cbd5e1; cursor: not-allowed; }
+        
+        .quiz-avg { font-weight: 800; color: var(--quiz-color); font-size: 1.1rem; }
+
+        .info-box { background: #fffbeb; color: #92400e; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid #fcd34d; display: flex; align-items: center; gap: 10px; }
+        
+        .btn-del { color: #cbd5e2; cursor: pointer; font-weight: bold; font-size: 1.2rem; line-height: 1; padding: 0 8px; }
+        .btn-del:hover { color: #ef4444; }
+
+        .score-badge { display: inline-block; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 1.1rem; min-width: 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .score-high { background: #dcfce7; color: #166534; border: 1px solid #86efac; } 
+        .score-med { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; } 
+        .score-low { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* Mobile */
+        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); }
+        @media (max-width: 768px) {
+            aside { position: absolute; height: 100%; transform: translateX(-100%); transition: transform 0.3s; width: 270px; }
+            aside.open { transform: translateX(0); }
+            .menu-toggle { display: block; }
+            .nav-tabs { overflow-x: auto; padding: 5px; }
+            .nav-btn { flex: 0 0 auto; min-width: 120px; }
+            .header-actions span { display: none; }
+            th.sticky-col, td.sticky-col { min-width: 160px; }
+            .q-options { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            aside, .add-box, .nav-tabs, .info-box, .header-actions, .menu-toggle, .game-container { display: none !important; }
+            main, .content-scroll, body { height: auto !important; overflow: visible !important; display: block !important; background: white !important; padding: 0 !important; margin: 0 !important; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+            .grid-container { box-shadow: none; border: 1px solid #000; }
+            table { font-size: 10pt; }
+            th, td { border: 1px solid #000 !important; color: #000 !important; }
+            .school-profile { border: none; margin-bottom: 10px; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- AUDIO -->
+    <audio id="bgMusic" loop>
+        <source src="djtormonitor.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Header Print -->
+    <div class="print-header">
+        <div style="display:flex; justify-content:center; margin-bottom:15px;">
+            <img src="./logo-sdn-banjarwangi.png" alt="Logo" style="width:80px; height:80px; object-fit:contain;">
+        </div>
+        <h1 style="font-size:24px; text-transform:uppercase; margin:0; color:#000;">SDN BANJARWANGI</h1>
+        <h3 style="margin:5px 0; color:#000;">Pendidikan Agama Islam</h3>
+        <p style="margin:5px 0 20px 0; font-weight:bold; color:#000;">Laporan Hasil Belajar Siswa</p>
+        <div style="border-top: 3px double #000; margin: 20px 0;"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="school-profile">
+            <div class="logo-container">
+                <img src="./logo-sdn-banjarwangi.png" onerror="this.src='https://via.placeholder.com/100?text=LOGO';" class="school-logo">
+            </div>
+            <h2 class="school-name">SDN Banjarwangi</h2>
+            <div class="mapel-badge">Pendidikan Agama Islam</div>
+            <div class="teacher-info">Guru: <span id="lblTeacher">SHABUDIN</span></div>
+        </div>
+
+        <div class="menu-label">Pilih Kelas</div>
+        <ul class="class-list" id="classList"></ul>
+        
+        <button class="btn-reset" onclick="resetAll()">🗑️ Reset Data</button>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <header>
+            <div class="header-title">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2 id="pageTitle">Sistem Absensi</h2>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button class="btn-action btn-music" id="btnMusic" onclick="toggleMusic()" title="Putar Musik">
+                    🎵 <span id="musicLabel">Musik</span>
+                </button>
+                <button class="btn-action btn-lock" id="btnLock" onclick="toggleLock()" title="Kunci Edit">
+                    🔓 <span>Kunci</span>
+                </button>
+                <button class="btn-action btn-print" onclick="window.print()" title="Cetak Laporan">
+                    🖨️ <span>Cetak</span>
+                </button>
+                <button class="btn-action btn-download" onclick="downloadCSV()" title="Unduh Excel">
+                    📥 <span>Excel</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            
+            <!-- 6 MENU UTAMA -->
+            <div class="nav-tabs">
+                <button class="nav-btn" id="btnAbsen" onclick="switchView('absen')">📅 Absensi</button>
+                <button class="nav-btn" id="btnNilai" onclick="switchView('nilai')">💯 Nilai Harian</button>
+                <button class="nav-btn" id="btnQuiz" onclick="switchView('quiz')">🧠 Mode Kuis & Game</button>
+                <button class="nav-btn" id="btnRecapAbsen" onclick="switchView('recap_absen')">📊 Rekap Absen</button>
+                <button class="nav-btn" id="btnRecapNilai" onclick="switchView('recap_nilai')">📈 Rekap Nilai</button>
+                <button class="nav-btn" id="btnHasil" onclick="switchView('hasil')">🚀 Hasil Akhir</button>
+            </div>
+
+            <!-- GAME KUIS (HANYA MUNCUL DI MODE KUIS) -->
+            <div id="gameArea" class="hidden">
+                
+                <!-- BAGIAN 1: FORM INPUT -->
+                <div id="gameIntro" class="game-container">
+                    <h2 class="game-title">🎮 Kuis Pendidikan Agama Islam</h2>
+                    <p class="game-desc">Masukkan data diri untuk memulai kuis interaktif.</p>
+                    
+                    <div class="form-group-game">
+                        <label class="form-label-game">Pilih Kelas:</label>
+                        <select id="gameClassSelect" class="game-input">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="form-group-game">
+                        <label class="form-label-game">Nama Siswa (Sesuai Daftar Kelas):</label>
+                        <input type="text" id="gameNameInput" class="game-input" placeholder="Ketik nama lengkap..." list="studentDatalist">
+                        <datalist id="studentDatalist"></datalist>
+                    </div>
+
+                    <div class="form-group-game">
+                        <label class="form-label-game">Nomor Kuis:</label>
+                        <select id="gameQuizNum" class="game-input">
+                            <option value="1">Kuis 1</option>
+                            <option value="2">Kuis 2</option>
+                            <option value="3">Kuis 3</option>
+                            <option value="4">Kuis 4</option>
+                            <option value="5">Kuis 5</option>
+                            <option value="6">Kuis 6</option>
+                            <option value="7">Kuis 7</option>
+                            <option value="8">Kuis 8</option>
+                            <option value="9">Kuis 9</option>
+                            <option value="10">Kuis 10</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-start-game" onclick="startGame()">MULAI KUIS 🚀</button>
+                </div>
+
+                <!-- BAGIAN 2: PERTANYAAN -->
+                <div id="gameQuestions" class="game-container hidden">
+                    <h2 class="game-title" style="font-size:1.5rem;">Jawab Pertanyaan Berikut:</h2>
+                    <div id="questionsRender"></div>
+                    <button class="btn-start-game" onclick="submitGame()" style="background:var(--primary); margin-top:20px;">SELESAI & SIMPAN NILAI 💾</button>
+                </div>
+
+                <!-- BAGIAN 3: HASIL -->
+                <div id="gameResult" class="game-container hidden">
+                    <div class="result-box">
+                        <h3>Nilai Kamu:</h3>
+                        <span id="finalScoreDisplay" class="result-score">0</span>
+                        <p id="resultMessage">Nilai telah tersimpan otomatis ke rekap!</p>
+                    </div>
+                    <button class="btn-start-game" onclick="resetGame()">MAIN UNTUK SISWA LAIN ↺</button>
+                </div>
+
+            </div>
+            <!-- END GAME AREA -->
+
+            <!-- INFO LOGIKA -->
+            <div id="logicInfo" class="info-box" style="display:none;">
+                <span>ℹ️ Logika Perhitungan:</span> 
+                (Rata-rata Nilai Harian + Rata-rata Kuis / 2) - (Alpha × 5) - (Sakit × 2) - (Izin × 2).
+            </div>
+
+            <!-- TAMBAH SISWA -->
+            <div class="add-box">
+                <input type="text" id="inpName" class="add-input" placeholder="Ketik nama siswa baru..." onkeypress="handleEnter(event)">
+                <button class="add-btn" onclick="addStudent()">+ Tambah</button>
+            </div>
+
+            <!-- TABEL DATA -->
+            <div class="grid-container">
+                <table id="mainTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            <th class="sticky-col">Nama Siswa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- KONFIGURASI UTAMA ---
+        const TEACHER_NAME = "SHABUDIN";
+        const classes = ["Kelas 4A", "Kelas 4B", "Kelas 4C", "Kelas 3A", "Kelas 3B", "Kelas 3C"];
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const totalDays = 31; 
+        const totalQuizzes = 10; 
+
+        const PENALTI_ALPHA = 5;
+        const PENALTI_SAKIT = 2;
+        const PENALTI_IZIN = 2;
+
+        // SOAL PAI
+        const quizQuestions = [
+            { q: "Berapa jumlah Rukun Islam?", options: ["5 Rukun", "4 Rukun", "6 Rukun", "3 Rukun"], ans: 0 },
+            { q: "Rukun Islam yang pertama adalah?", options: ["Sholat", "Zakat", "Puasa", "Syahadat"], ans: 3 },
+            { q: "Sholat wajib sehari semalam berjumlah?", options: ["5 Waktu", "4 Waktu", "3 Waktu", "6 Waktu"], ans: 0 },
+            { q: "Puasa wajib dilaksanakan di bulan?", options: ["Ramadhan", "Syawal", "Muharram", "Dzulhijjah"], ans: 0 },
+            { q: "Zakat Fitrah wajib dikeluarkan pada bulan?", options: ["Ramadhan", "Syawal", "Muharram", "Rajab"], ans: 0 },
+            { q: "Rukun Iman yang pertama adalah percaya kepada?", options: ["Malaikat", "Kitab", "Allah", "Rasul"], ans: 2 },
+            { q: "Nabi Muhammad SAW diutus di kota?", options: ["Madinah", "Mekkah", "Yerusalem", "Kairo"], ans: 1 },
+            { q: "Kitab suci umat Islam adalah?", options: ["Zabur", "Taurat", "Injil", "Al-Quran"], ans: 3 },
+            { q: "Malaikat yang bertugas mencatat amal baik adalah?", options: ["Jibril", "Mikail", "Raqib", "Atid"], ans: 2 },
+            { q: "Ibadah haji dilaksanakan di kota?", options: ["Mekkah", "Madinah", "Jeddah", "Taif"], ans: 0 }
+        ];
+
+        let isLocked = false; 
+        let isPlaying = false;
+        
+        let appData = { 
+            currentClassIdx: 0, 
+            currentMonthIdx: 0,
+            viewMode: 'absen', 
+            students: {}, 
+            attendance: {},
+            grades: {},
+            quizzes: {} 
+        };
+
+        window.onload = function() {
+            const saved = localStorage.getItem('app_sekolah_vfinal_game');
+            if (saved) { 
+                appData = JSON.parse(saved);
+                if(!appData.quizzes) { initQuizData(); saveData(); }
+            } else { 
+                initEmptyData(); 
+            }
+            
+            document.getElementById('lblTeacher').innerText = TEACHER_NAME;
+            
+            const audio = document.getElementById("bgMusic");
+            audio.onerror = function() {
+                alert("PERINGATAN: File lagu 'djtormonitor.mp3' tidak ditemukan!");
+                const btn = document.getElementById('btnMusic');
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+            };
+
+            renderAll();
+        };
+
+        function initEmptyData() {
+            classes.forEach(c => { 
+                appData.students[c] = []; 
+                appData.attendance[c] = {};
+                appData.grades[c] = {}; 
+                appData.quizzes[c] = {}; 
+            });
+            saveData();
+        }
+
+        function initQuizData() {
+            classes.forEach(c => { appData.quizzes[c] = {}; });
+        }
+
+        function saveData() { 
+            localStorage.setItem('app_sekolah_vfinal_game', JSON.stringify(appData)); 
+        }
+
+        function resetAll() {
+            if(confirm("HAPUS SEMUA DATA?")) { 
+                localStorage.removeItem('app_sekolah_vfinal_game'); 
+                location.reload(); 
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function renderAll() {
+            renderSidebar(); 
+            renderTableHeader(); 
+            renderTableBody(); 
+            updateInfoBox();
+            updateTitle();
+            updateGameUI(); // Refresh data list in game
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('classList');
+            list.innerHTML = '';
+            classes.forEach((c, idx) => {
+                const li = document.createElement('li');
+                const btn = document.createElement('button');
+                btn.className = `class-btn ${idx === appData.currentClassIdx ? 'active' : ''}`;
+                btn.innerText = c;
+                btn.onclick = () => switchClass(idx);
+                li.appendChild(btn);
+                list.appendChild(li);
+            });
+        }
+
+        function switchClass(idx) {
+            appData.currentClassIdx = idx;
+            saveData();
+            renderAll();
+        }
+
+        function switchView(mode) {
+            appData.viewMode = mode;
+            document.querySelectorAll('.nav-btn').forEach(b => b.className = 'nav-btn');
+            
+            if(mode === 'absen') document.getElementById('btnAbsen').classList.add('active-absen');
+            else if(mode === 'nilai') document.getElementById('btnNilai').classList.add('active-nilai');
+            else if(mode === 'quiz') document.getElementById('btnQuiz').classList.add('active-kuis');
+            else if(mode === 'recap_absen') document.getElementById('btnRecapAbsen').classList.add('active-absen');
+            else if(mode === 'recap_nilai') document.getElementById('btnRecapNilai').classList.add('active-nilai');
+            else if(mode === 'hasil') document.getElementById('btnHasil').classList.add('active-hasil');
+
+            // Tampilkan Game Area hanya di mode Kuis
+            const gameArea = document.getElementById('gameArea');
+            if(mode === 'quiz') {
+                gameArea.classList.remove('hidden');
+                resetGame(); // Pastikan game reset ke awal saat buka tab
+            } else {
+                gameArea.classList.add('hidden');
+            }
+
+            renderTableHeader();
+            renderTableBody();
+            updateInfoBox();
+            updateTitle();
+        }
+
+        function updateTitle() {
+            const mthName = months[appData.currentMonthIdx];
+            const clsName = classes[appData.currentClassIdx];
+            let titleText = "";
+            if(appData.viewMode === 'absen') titleText = "Absensi Harian";
+            else if(appData.viewMode === 'nilai') titleText = "Input Nilai Harian";
+            else if(appData.viewMode === 'quiz') titleText = "Mode Kuis & Game PAI";
+            else if(appData.viewMode === 'recap_absen') titleText = "Rekap Absensi Bulanan";
+            else if(appData.viewMode === 'recap_nilai') titleText = "Rekap Nilai Bulanan";
+            else if(appData.viewMode === 'hasil') titleText = "Hasil Akhir Siswa";
+            
+            document.getElementById('pageTitle').innerText = `${titleText} - ${clsName}`;
+        }
+
+        function updateInfoBox() {
+            const info = document.getElementById('logicInfo');
+            info.style.display = (appData.viewMode === 'hasil') ? 'flex' : 'none';
+        }
+
+        // --- GAME FUNCTIONS ---
+        function updateGameUI() {
+            // Populate Dropdown Kelas
+            const clsSelect = document.getElementById('gameClassSelect');
+            clsSelect.innerHTML = '';
+            classes.forEach((c, idx) => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.innerText = c;
+                if(idx === appData.currentClassIdx) opt.selected = true;
+                clsSelect.appendChild(opt);
+            });
+
+            // Populate Datalist Nama Siswa
+            const dl = document.getElementById('studentDatalist');
+            dl.innerHTML = '';
+            const currentClass = classes[appData.currentClassIdx];
+            if(appData.students[currentClass]) {
+                appData.students[currentClass].forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.name;
+                    dl.appendChild(opt);
+                });
+            }
+        }
+
+        function startGame() {
+            const clsName = document.getElementById('gameClassSelect').value;
+            const studentName = document.getElementById('gameNameInput').value.trim();
+            const quizNum = document.getElementById('gameQuizNum').value;
+
+            if(!studentName) return alert("Nama harus diisi!");
+            
+            // VALIDASI SISWA
+            const student = appData.students[clsName].find(s => s.name.toLowerCase() === studentName.toLowerCase());
+
+            if(!student) {
+                alert(`Siswa bernama "${studentName}" TIDAK DITEMUKAN di Kelas ${clsName}.\n\nHarap cek kembali nama atau tambahkan siswa di menu utama.`);
+                return;
+            }
+
+            // Simpan state game
+            window.currentGame = {
+                studentId: student.id,
+                studentName: student.name,
+                className: clsName,
+                quizNum: quizNum
+            };
+
+            // Render Soal
+            const container = document.getElementById('questionsRender');
+            container.innerHTML = '';
+            
+            quizQuestions.forEach((q, idx) => {
+                const div = document.createElement('div');
+                div.className = 'question-card';
+                let opts = '';
+                q.options.forEach((opt, optIdx) => {
+                    opts += `<label class="q-option"><input type="radio" name="game_q_${idx}" value="${optIdx}"> <span>${opt}</span></label>`;
+                });
+                div.innerHTML = `<div class="q-text">${idx+1}. ${q.q}</div><div class="q-options">${opts}</div>`;
+                container.appendChild(div);
+            });
+
+            // Ganti Tampilan
+            document.getElementById('gameIntro').classList.add('hidden');
+            document.getElementById('gameQuestions').classList.remove('hidden');
+            document.getElementById('gameResult').classList.add('hidden');
+        }
+
+        function submitGame() {
+            let correctCount = 0;
+            quizQuestions.forEach((q, idx) => {
+                const selected = document.querySelector(`input[name="game_q_${idx}"]:checked`);
+                if(selected && parseInt(selected.value) === q.ans) {
+                    correctCount++;
+                }
+            });
+
+            // Hitung Nilai
+            const score = correctCount * 10; // 10 poin per soal
+            
+            // SIMPAN NILAI OTOMATIS
+            const { studentId, className, quizNum } = window.currentGame;
+
+            if(!appData.quizzes[className]) appData.quizzes[className] = {};
+            if(!appData.quizzes[className][studentId]) appData.quizzes[className][studentId] = {};
+
+            appData.quizzes[className][studentId][quizNum] = score;
+            saveData();
+
+            // Tampilkan Hasil
+            document.getElementById('finalScoreDisplay').innerText = score;
+            document.getElementById('resultMessage').innerText = `Hebat ${window.currentGame.studentName}! Nilai ${score} telah disimpan otomatis ke Rekap Kuis ${quizNum}.`;
+
+            document.getElementById('gameQuestions').classList.add('hidden');
+            document.getElementById('gameResult').classList.remove('hidden');
+
+            // Refresh tabel di latar belakang
+            renderTableBody();
+        }
+
+        function resetGame() {
+            document.getElementById('gameNameInput').value = '';
+            document.getElementById('gameIntro').classList.remove('hidden');
+            document.getElementById('gameQuestions').classList.add('hidden');
+            document.getElementById('gameResult').classList.add('hidden');
+        }
+
+        // --- UI & TABLE LOGIC ---
+        function toggleMusic() {
+            const audio = document.getElementById("bgMusic");
+            const btn = document.getElementById('btnMusic');
+            const label = document.getElementById('musicLabel');
+            if (isPlaying) {
+                audio.pause();
+                btn.classList.remove('music-playing');
+                label.innerText = "Musik";
+                isPlaying = false;
+            } else {
+                audio.play().then(() => {
+                    btn.classList.add('music-playing');
+                    label.innerText = "Berhenti";
+                    isPlaying = true;
+                }).catch(error => { console.error(error); });
+            }
+        }
+
+        function toggleLock() {
+            isLocked = !isLocked;
+            const btn = document.getElementById('btnLock');
+            if(isLocked) {
+                btn.classList.add('locked');
+                btn.innerHTML = '🔒 <span>Buka</span>';
+            } else {
+                btn.classList.remove('locked');
+                btn.innerHTML = '🔓 <span>Kunci</span>';
+            }
+            renderTableBody();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function addStudent() {
+            const name = document.getElementById('inpName').value.trim();
+            if(!name) return;
+            const currentClass = classes[appData.currentClassIdx];
+            const id = Date.now().toString(); 
+            appData.students[currentClass].push({id, name});
+            document.getElementById('inpName').value = '';
+            saveData();
+            renderTableBody();
+            updateGameUI(); // Refresh game datalist
+        }
+
+        function handleEnter(e) { if(e.key === 'Enter') addStudent(); }
+
+        function deleteStudent(id) {
+            if(!confirm("Yakin hapus?")) return;
+            const currentClass = classes[appData.currentClassIdx];
+            appData.students[currentClass] = appData.students[currentClass].filter(s => s.id !== id);
+            saveData();
+            renderTableBody();
+        }
+
+        function renderTableHeader() {
+            const thead = document.getElementById('tableHeader');
+            thead.innerHTML = '<th class="sticky-col">Nama Siswa</th>';
+            const mode = appData.viewMode;
+
+            if (mode === 'absen') {
+                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>${i}</th>`;
+            } else if (mode === 'nilai') {
+                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>${i}</th>`;
+            } else if (mode === 'quiz') {
+                for(let i=1; i<=totalQuizzes; i++) thead.innerHTML += `<th>Kuis ${i}</th>`;
+                thead.innerHTML += `<th>Rata-rata</th>`;
+            } else if (mode === 'recap_absen') {
+                ['H', 'S', 'I', 'A'].forEach(s => thead.innerHTML += `<th>${s}</th>`);
+            } else if (mode === 'recap_nilai') {
+                thead.innerHTML += `<th>Rata-rata</th>`;
+            } else if (mode === 'hasil') {
+                thead.innerHTML += `<th>Nilai Akhir</th>`;
+            }
+        }
+
+        function renderTableBody() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            const currentClass = classes[appData.currentClassIdx];
+            const students = appData.students[currentClass];
+            const mode = appData.viewMode;
+            const monthIdx = appData.currentMonthIdx;
+
+            students.forEach(s => {
+                const tr = document.createElement('tr');
+                let rowHtml = `<td class="sticky-col"><span>${s.name}</span><span class="btn-del" onclick="deleteStudent('${s.id}')">&times;</span></td>`;
+
+                if (mode === 'absen') {
+                    for(let i=1; i<=totalDays; i++) {
+                        const key = `${monthIdx}-${i}`;
+                        const val = appData.attendance[currentClass][s.id]?.[key] || '';
+                        rowHtml += `<td><div class="day-cell status-${val}" onclick="cycleStatus('${s.id}', '${key}')">${val}</div></td>`;
+                    }
+                } else if (mode === 'nilai') {
+                    for(let i=1; i<=totalDays; i++) {
+                        const key = `${monthIdx}-${i}`;
+                        const val = appData.grades[currentClass][s.id]?.[key] || '';
+                        rowHtml += `<td><input type="number" class="grade-input" value="${val}" onchange="setGrade('${s.id}', '${key}', this.value)" ${isLocked?'disabled':''} min="0" max="100"></td>`;
+                    }
+                } else if (mode === 'quiz') {
+                    let sumQuiz = 0; let countQuiz = 0;
+                    for(let i=1; i<=totalQuizzes; i++) {
+                        const qId = i.toString();
+                        const val = appData.quizzes[currentClass][s.id]?.[qId] || '';
+                        if(val !== '') { sumQuiz += parseInt(val); countQuiz++; }
+                        rowHtml += `<td><input type="number" class="grade-input" style="color:var(--quiz-color);" value="${val}" onchange="setQuiz('${s.id}', '${qId}', this.value)" ${isLocked?'disabled':''} min="0" max="100"></td>`;
+                    }
+                    const avgQuiz = countQuiz > 0 ? Math.round(sumQuiz/countQuiz) : 0;
+                    rowHtml += `<td class="quiz-avg">${avgQuiz}</td>`;
+                } else if (mode === 'recap_absen') {
+                    const counts = {H:0, S:0, I:0, A:0};
+                    for(let i=1; i<=totalDays; i++) {
+                        const key = `${monthIdx}-${i}`;
+                        const val = appData.attendance[currentClass][s.id]?.[key] || '';
+                        if(counts[val] !== undefined) counts[val]++;
+                    }
+                    rowHtml += `<td>${counts.H}</td><td>${counts.S}</td><td>${counts.I}</td><td>${counts.A}</td>`;
+                } else if (mode === 'recap_nilai') {
+                    let sum = 0, count = 0;
+                    for(let i=1; i<=totalDays; i++) {
+                        const key = `${monthIdx}-${i}`;
+                        const val = appData.grades[currentClass][s.id]?.[key];
+                        if(val && val !== '') { sum += parseInt(val); count++; }
+                    }
+                    const avg = count > 0 ? Math.round(sum/count) : 0;
+                    rowHtml += `<td style="font-weight:bold; color:var(--secondary);">${avg}</td>`;
+                } else if (mode === 'hasil') {
+                    let sum = 0, count = 0;
+                    for(let i=1; i<=totalDays; i++) {
+                        const key = `${monthIdx}-${i}`;
+                        const val = appData.grades[currentClass][s.id]?.[key];
+                        if(val && val !== '') { sum += parseInt(val); count++; }
+                    }
+                    const avgDaily = count > 0 ? Math.round(sum/count) : 100; 
+
+                    let sumQuiz = 0, countQuiz = 0;
+                    for(let i=1; i<=totalQuizzes; i++) {
+                        const val = appData.quizzes[currentClass][s.id]?.[i.toString()];
+                        if(val && val !== '') { sumQuiz += parseInt(val); countQuiz++; }
+                    }
+                    const avgQuiz = countQuiz > 0 ? Math.round(sumQuiz/countQuiz) : 0;
+
+                    const baseScore = (avgDaily + avgQuiz) / 2;
+
+                    const counts = {H:0, S:0, I:0, A:0};
+                    for(let i=1; i<=totalDays; i++) {
+                        const key = `${monthIdx}-${i}`;
+                        const val = appData.attendance[currentClass][s.id]?.[key] || '';
+                        if(counts[val] !== undefined) counts[val]++;
+                    }
+
+                    let finalScore = Math.round(baseScore) - (counts.A * PENALTI_ALPHA) - (counts.S * PENALTI_SAKIT) - (counts.I * PENALTI_IZIN);
+                    if(finalScore < 0) finalScore = 0;
+
+                    let badgeClass = 'score-med';
+                    if(finalScore >= 85) badgeClass = 'score-high';
+                    else if(finalScore < 75) badgeClass = 'score-low';
+
+                    rowHtml += `<td><span class="score-badge ${badgeClass}">${finalScore}</span></td>`;
+                }
+
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cycleStatus(sid, key) {
+            if(isLocked) return;
+            const currentClass = classes[appData.currentClassIdx];
+            const current = appData.attendance[currentClass][sid]?.[key] || '';
+            const statuses = ['', 'H', 'S', 'I', 'A'];
+            const idx = statuses.indexOf(current);
+            const next = statuses[(idx + 1) % statuses.length];
+            
+            if(!appData.attendance[currentClass][sid]) appData.attendance[currentClass][sid] = {};
+            appData.attendance[currentClass][sid][key] = next;
+            
+            saveData();
+            renderTableBody();
+        }
+
+        function setGrade(sid, key, val) {
+            if(isLocked) return;
+            const currentClass = classes[appData.currentClassIdx];
+            if(!appData.grades[currentClass][sid]) appData.grades[currentClass][sid] = {};
+            appData.grades[currentClass][sid][key] = val;
+            saveData();
+        }
+
+        function setQuiz(sid, key, val) {
+            if(isLocked) return;
+            const currentClass = classes[appData.currentClassIdx];
+            if(!appData.quizzes[currentClass][sid]) appData.quizzes[currentClass][sid] = {};
+            appData.quizzes[currentClass][sid][key] = val;
+            saveData();
+        }
+
+        function downloadCSV() {
+            const currentClass = classes[appData.currentClassIdx];
+            const students = appData.students[currentClass];
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Nama Siswa," + Array.from({length: totalDays}, (_, i) => i+1).join(",") + "\n";
+            students.forEach(s => {
+                let rowData = [s.name];
+                for(let i=1; i<=totalDays; i++) {
+                    const key = `${appData.currentMonthIdx}-${i}`;
+                    if(appData.viewMode === 'absen') {
+                         rowData.push(appData.attendance[currentClass][s.id]?.[key] || '');
+                    } else if (appData.viewMode === 'nilai') {
+                         rowData.push(appData.grades[currentClass][s.id]?.[key] || '');
+                    } else {
+                         rowData.push('-');
+                    }
+                }
+                csvContent += rowData.join(",") + "\n";
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Data_${currentClass}_${months[appData.currentMonthIdx]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
