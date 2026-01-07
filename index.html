@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi PAI - 16 Pertemuan (Excel Mode)</title>
+    <title>Sistem Absensi PAI - Format Excel</title>
     <style>
         :root {
             --primary: #059669;
@@ -18,11 +18,11 @@
             --border: #cbd5e1;
             
             /* Warna Status Absensi */
-            --col-h: #dcfce7; --txt-h: #166534; /* Hadir */
-            --col-i: #fef9c3; --txt-i: #854d0e; /* Ijin - Urutan baru */
-            --col-s: #dbeafe; --txt-s: #1e40af; /* Sakit - Urutan baru */
-            --col-a: #fee2e2; --txt-a: #991b1b; /* Alfa */
-            --col-empty: #f8fafc; /* Kosong */
+            --col-h: #dcfce7; --txt-h: #166534;
+            --col-i: #fef9c3; --txt-i: #854d0e;
+            --col-s: #dbeafe; --txt-s: #1e40af;
+            --col-a: #fee2e2; --txt-a: #991b1b;
+            --col-closed: #f1f5f9; /* Abu abu untuk kolom ketutup */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
@@ -126,26 +126,40 @@
         .add-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
         .add-btn { background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; }
 
-        /* Table Style (Seperti Excel) */
+        /* Table Style (Excel Look) */
         .grid-container { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: auto; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         table { border-collapse: collapse; min-width: 100%; width: 100%; table-layout: fixed; } 
         
-        th { background: #f1f5f9; padding: 10px 5px; font-size: 0.8rem; text-align: center; border: 1px solid #cbd5e1; position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #94a3b8; }
-        td { padding: 0; border: 1px solid #cbd5e1; text-align: center; font-size: 0.9rem; height: 50px; background: white; }
+        th { background: #f1f5f9; padding: 10px 5px; font-size: 0.85rem; text-align: center; border: 1px solid var(--border); position: sticky; top: 0; z-index: 5; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #94a3b8; }
+        td { padding: 0; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; height: 50px; background: white; }
         tbody tr:hover { background-color: #f8fafc; }
 
+        /* Sticky Columns (No & Nama) */
         th.sticky-col, td.sticky-col {
-            position: sticky; left: 0; background: var(--bg-card); z-index: 10; min-width: 200px; text-align: left; padding: 0 15px; border-right: 2px solid #94a3b8; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; left: 0; background: var(--bg-card); z-index: 10; min-width: 50px; text-align: center; border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
         }
-        th.sticky-col { z-index: 15; background: #f1f5f9; font-weight: 800; color: var(--primary); }
+        
+        th.sticky-col-second, td.sticky-col-second {
+            position: sticky; left: 50px; background: var(--bg-card); z-index: 10; min-width: 200px; text-align: left; padding: 0 15px; border-right: 2px solid #94a3b8; display: flex; align-items: center; justify-content: space-between;
+        }
+        
+        th.sticky-col { font-weight: 800; color: var(--primary); background: #f1f5f9; z-index: 15; border-right: 1px solid #94a3b8; }
+        th.sticky-col-second { z-index: 15; background: #f1f5f9; font-weight: 800; color: var(--primary); border-right: 2px solid #94a3b8; }
         
         /* Excel-like Clickable Cell */
         .day-cell { 
             cursor: pointer; font-weight: 800; transition: all 0.1s; user-select: none; font-size: 1.2rem; 
             width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
         }
-        .day-cell:hover { transform: scale(1.05); filter: brightness(0.95); }
+        .day-cell:hover { filter: brightness(0.95); transform: scale(1.05); }
         
+        /* Style untuk Kolom Ketutup (P1-P7) */
+        .day-cell-closed {
+            background-color: var(--col-closed); 
+            cursor: not-allowed; 
+            color: #94a3b8;
+        }
+
         /* Urutan Warna Baru */
         .status-H { background-color: var(--col-h); color: var(--txt-h); }
         .status-I { background-color: var(--col-i); color: var(--txt-i); } /* Ijin */
@@ -178,7 +192,7 @@
             .nav-tabs { overflow-x: auto; padding: 5px; }
             .nav-btn { flex: 0 0 auto; min-width: 120px; }
             .header-actions span { display: none; }
-            th.sticky-col, td.sticky-col { min-width: 160px; }
+            th.sticky-col-second, td.sticky-col-second { min-width: 160px; }
             .q-options { grid-template-columns: 1fr; }
         }
 
@@ -330,7 +344,7 @@
             <div id="logicInfo" class="info-box" style="display:none;">
                 <span>ℹ️ Logika Perhitungan:</span> 
                 (Rata-rata Nilai Harian + Rata-rata Kuis) dibagi 2. 
-                <br>Urutan Absensi: Klik1=Hadir, Klik2=Ijin, Klik3=Sakit, Klik4=Alfa.
+                <br>Perhatian: Pertemuan 1-7 Terkunci (Ketutup). P8-P16 Dibuka.
             </div>
 
             <!-- TAMBAH SISWA -->
@@ -344,7 +358,7 @@
                 <table id="mainTable">
                     <thead>
                         <tr id="tableHeader">
-                            <th class="sticky-col">Nama Siswa</th>
+                            <!-- Header akan diisi oleh JS -->
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
@@ -393,7 +407,7 @@
         };
 
         window.onload = function() {
-            const saved = localStorage.getItem('app_sekolah_vfinal_clickmode');
+            const saved = localStorage.getItem('app_sekolah_vfinal_excelmode');
             if (saved) { 
                 appData = JSON.parse(saved);
                 classes.forEach(c => {
@@ -429,12 +443,12 @@
         }
 
         function saveData() { 
-            localStorage.setItem('app_sekolah_vfinal_clickmode', JSON.stringify(appData)); 
+            localStorage.setItem('app_sekolah_vfinal_excelmode', JSON.stringify(appData)); 
         }
 
         function resetAll() {
             if(confirm("HAPUS SEMUA DATA? Data tidak bisa dikembalikan.")) { 
-                localStorage.removeItem('app_sekolah_vfinal_clickmode'); 
+                localStorage.removeItem('app_sekolah_vfinal_excelmode'); 
                 location.reload(); 
             }
         }
@@ -521,7 +535,7 @@
 
         function updateInfoBox() {
             const info = document.getElementById('logicInfo');
-            info.style.display = (appData.viewMode === 'hasil' || appData.viewMode === 'absen') ? 'flex' : 'none';
+            info.style.display = (appData.viewMode === 'hasil' || appData.viewMode === 'absen' || appData.viewMode === 'nilai') ? 'flex' : 'none';
         }
 
         // --- GAME FUNCTIONS ---
@@ -683,21 +697,39 @@
 
         function renderTableHeader() {
             const thead = document.getElementById('tableHeader');
-            thead.innerHTML = '<th class="sticky-col">Nama Siswa</th>';
+            thead.innerHTML = '';
             const mode = appData.viewMode;
 
+            // Header Khusus dengan No dan Nama
             if (mode === 'absen') {
-                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>Pertemuan ${i}</th>`;
+                thead.innerHTML += `<th class="sticky-col">No</th>`;
+                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                for(let i=1; i<=totalDays; i++) {
+                    // Tanda jika kolom ketutup
+                    const isClosed = (i <= 7);
+                    const style = isClosed ? "background:#e2e8f0; color:#64748b;" : "";
+                    thead.innerHTML += `<th style="${style}">P${i}</th>`;
+                }
             } else if (mode === 'nilai') {
-                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>Pertemuan ${i}</th>`;
+                thead.innerHTML += `<th class="sticky-col">No</th>`;
+                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
+                for(let i=1; i<=totalDays; i++) thead.innerHTML += `<th>P${i}</th>`;
             } else if (mode === 'quiz') {
+                thead.innerHTML += `<th class="sticky-col">No</th>`;
+                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
                 for(let i=1; i<=totalQuizzes; i++) thead.innerHTML += `<th>Kuis ${i}</th>`;
                 thead.innerHTML += `<th>Rata-rata</th>`;
             } else if (mode === 'recap_absen') {
+                thead.innerHTML += `<th class="sticky-col">No</th>`;
+                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
                 ['H', 'I', 'S', 'A'].forEach(s => thead.innerHTML += `<th>${s}</th>`);
             } else if (mode === 'recap_nilai') {
+                thead.innerHTML += `<th class="sticky-col">No</th>`;
+                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
                 thead.innerHTML += `<th>Rata-rata</th>`;
             } else if (mode === 'hasil') {
+                thead.innerHTML += `<th class="sticky-col">No</th>`;
+                thead.innerHTML += `<th class="sticky-col-second">Nama Siswa</th>`;
                 thead.innerHTML += `<th>Nilai Akhir</th>`;
             }
         }
@@ -710,21 +742,42 @@
             const mode = appData.viewMode;
             const monthIdx = appData.currentMonthIdx;
 
-            students.forEach(s => {
+            students.forEach((s, index) => {
                 const tr = document.createElement('tr');
-                let rowHtml = `<td class="sticky-col"><span>${s.name}</span><span class="btn-del" onclick="deleteStudent('${s.id}')">&times;</span></td>`;
+                
+                // Kolom No
+                let rowHtml = `<td class="sticky-col" style="left:0;">${index+1}</td>`;
+                
+                // Kolom Nama
+                rowHtml += `<td class="sticky-col-second"><span>${s.name}</span><span class="btn-del" onclick="deleteStudent('${s.id}')">&times;</span></td>`;
 
                 if (mode === 'absen') {
                     for(let i=1; i<=totalDays; i++) {
                         const key = `${monthIdx}-${i}`;
                         const val = appData.attendance[currentClass][s.id]?.[key] || '';
-                        rowHtml += `<td><div class="day-cell status-${val}" onclick="cycleStatus('${s.id}', '${key}')">${val}</div></td>`;
+                        
+                        // Cek apakah kolom ketutup (1-7)
+                        const isClosed = (i <= 7);
+                        
+                        if (isClosed) {
+                            // Tampilan Kolom Ketutup
+                            rowHtml += `<td><div class="day-cell day-cell-closed">-</div></td>`;
+                        } else {
+                            // Tampilan Normal
+                            rowHtml += `<td><div class="day-cell status-${val}" onclick="cycleStatus('${s.id}', '${key}')">${val}</div></td>`;
+                        }
                     }
                 } else if (mode === 'nilai') {
                     for(let i=1; i<=totalDays; i++) {
                         const key = `${monthIdx}-${i}`;
                         const val = appData.grades[currentClass][s.id]?.[key] || '';
-                        rowHtml += `<td><input type="number" class="grade-input" value="${val}" onchange="setGrade('${s.id}', '${key}', this.value)" ${isLocked?'disabled':''} min="0" max="100"></td>`;
+                        const isClosed = (i <= 7);
+                        
+                        if(isClosed) {
+                             rowHtml += `<td><div class="day-cell day-cell-closed">-</div></td>`;
+                        } else {
+                             rowHtml += `<td><input type="number" class="grade-input" value="${val}" onchange="setGrade('${s.id}', '${key}', this.value)" ${isLocked?'disabled':''} min="0" max="100"></td>`;
+                        }
                     }
                 } else if (mode === 'quiz') {
                     let sumQuiz = 0; let countQuiz = 0;
@@ -793,20 +846,25 @@
             });
         }
 
-        // --- FUNGSI SIKLIK (FIXED ORDER) ---
         function cycleStatus(sid, key) {
             if(isLocked) return;
             
+            // Cek apakah pertemuan ini termasuk kolom ketutup (1-7)
+            const parts = key.split('-');
+            const meetingIdx = parseInt(parts[1]);
+            if(meetingIdx <= 7) {
+                alert("Pertemuan 1-7 sudah ditutup! Tidak bisa mengubah data.");
+                return;
+            }
+
             const currentClass = classes[appData.currentClassIdx];
             
-            // Safety Checks
             if(!appData.attendance[currentClass]) appData.attendance[currentClass] = {};
             if(!appData.attendance[currentClass][sid]) appData.attendance[currentClass][sid] = {};
 
             const current = appData.attendance[currentClass][sid][key] || '';
             
-            // URUTAN BARU SESUAI REQUEST: 
-            // 1: H, 2: I (Ijin), 3: S (Sakit), 4: A (Alfa), Loop
+            // Urutan: H, Ijin, Sakit, Alfa
             const statuses = ['', 'H', 'I', 'S', 'A']; 
             const idx = statuses.indexOf(current);
             const next = statuses[(idx + 1) % statuses.length];
@@ -819,6 +877,15 @@
 
         function setGrade(sid, key, val) {
             if(isLocked) return;
+            
+            // Cek penutupan untuk nilai harian juga
+            const parts = key.split('-');
+            const meetingIdx = parseInt(parts[1]);
+            if(meetingIdx <= 7) {
+                alert("Pertemuan 1-7 sudah ditutup! Tidak bisa mengubah data.");
+                return;
+            }
+
             const currentClass = classes[appData.currentClassIdx];
             if(!appData.grades[currentClass]) appData.grades[currentClass] = {};
             if(!appData.grades[currentClass][sid]) appData.grades[currentClass][sid] = {};
@@ -839,9 +906,9 @@
             const currentClass = classes[appData.currentClassIdx];
             const students = appData.students[currentClass];
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Nama Siswa," + Array.from({length: totalDays}, (_, i) => `Pertemuan ${i+1}`).join(",") + "\n";
-            students.forEach(s => {
-                let rowData = [s.name];
+            csvContent += "No,Nama Siswa," + Array.from({length: totalDays}, (_, i) => `P${i+1}`).join(",") + "\n";
+            students.forEach((s, idx) => {
+                let rowData = [idx+1, s.name];
                 for(let i=1; i<=totalDays; i++) {
                     const key = `${appData.currentMonthIdx}-${i}`;
                     if(appData.viewMode === 'absen') {
